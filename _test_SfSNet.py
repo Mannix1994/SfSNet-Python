@@ -62,7 +62,7 @@ def _test():
         # im=reshape(im,[size(im)]);
         im = np.float32(im)/255.0  # im=single(im)/255;
         im = np.transpose(im, [1, 0, 2])  # m_data = permute(im_data, [2, 1, 3]);
-        # add by me
+        # add by wang
         im = np.transpose(im, [2, 0, 1])  # from (128, 128, 3) to (3, 128, 128)
         im = np.expand_dims(im, 0)
         print 'data shape', im.shape
@@ -85,21 +85,18 @@ def _test():
         dimensional feature vector as lighting representation.
         """
 
-        print im_name
-        print n_out.shape
-        print al_out.shape
-        print light_out.shape
-        return
-
         # transform
         n_out2 = np.squeeze(n_out, 0)
+        n_out2 = np.transpose(n_out2, [2, 1, 0])  # add by wang
         n_out2 = n_out2[:, :, (2, 1, 0)]
-        print 'normal shape', n_out2.shape
+        print 'n_out2 shape', n_out2.shape
         n_out2 = cv2.rotate(n_out2, cv2.ROTATE_90_COUNTERCLOCKWISE)
         n_out2 = np.fliplr(n_out2)
         n_out2 = 2*n_out2-1  # [-1 1]
-        nr = np.sqrt(np.sum(n_out2**2, 3))
-        n_out2 = n_out2/np.repeat(nr, (1, 1, 3))
+        nr = np.sqrt(np.sum(n_out2**2, axis=2))  # nr=sqrt(sum(n_out2.^2,3))
+        nr = np.expand_dims(nr, axis=2)
+        print 'nr shape', nr.shape
+        n_out2 = n_out2/np.repeat(nr, 3, axis=2)
 
         al_out2 = cv2.rotate(al_out, cv2.ROTATE_90_COUNTERCLOCKWISE)
         al_out2 = al_out2[:, :, (2, 1, 0)]
