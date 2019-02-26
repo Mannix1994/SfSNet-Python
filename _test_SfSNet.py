@@ -22,7 +22,7 @@ def _test():
 
     # choose dataset
     # dat_idx = input('Please enter 1 for images with masks and 0 for images without mask: ')
-    dat_idx = 1
+    dat_idx = 0
     if dat_idx:
         # Images and masks are provided
         list_im = sorted(os.listdir('Images_mask/'))
@@ -30,8 +30,8 @@ def _test():
         dat_idx = 1
     elif dat_idx == 0:
         # No mask provided (Need to use your own mask).
-        list_im = sorted(os.listdir('Images/'))
-        list_im = [im for im in list_im if im.endswith('.png')]
+        list_im = sorted(os.listdir('Images1/'))
+        list_im = [im for im in list_im if im.endswith('.png') or im.endswith('.jpg')]
         dat_idx = 0  # Uncomment to test with this mode
     else:
         sys.stderr.write('Wrong Option!')
@@ -55,7 +55,7 @@ def _test():
             Mask = np.float32(Mask) / 255.0
             mask = cv2.resize(Mask, (M, M))
         else:
-            o_im = cv2.imread(os.path.join(PROJECT_DIR, 'Images', im_name))
+            o_im = cv2.imread(os.path.join(PROJECT_DIR, 'Images1', im_name))
             im = o_im.copy()
             im = cv2.resize(im, (M, M))
 
@@ -125,20 +125,39 @@ def _test():
             al_out2 = al_out2 * mask + diff
             Ishd = Ishd * mask + diff
             Irec = Irec * mask + diff
-            cv2.imshow("Image", o_im)
-            cv2.imshow("Normal", n_out2[:, :, [2, 1, 0]])
-            cv2.imshow("Albedo", al_out2[:, :, [2, 1, 0]])
-            cv2.imshow("Recon", Irec[:, :, [2, 1, 0]])
-            cv2.imshow("Shading", Ishd)
-            cv2.waitKey(500)
         else:
-            cv2.imshow("Image", o_im)
-            cv2.imshow("Normal", n_out2[:, :, [2, 1, 0]])
-            cv2.imshow("Albedo", al_out2[:, :, [2, 1, 0]])
-            cv2.imshow("Recon", Irec[:, :, [2, 1, 0]])
-            cv2.imshow("Shading", Ishd)
-            cv2.waitKey(500)
+            pass
 
+        # cv2.imshow("Image", o_im)
+        # cv2.imshow("Normal", n_out2[:, :, [2, 1, 0]])
+        # cv2.imshow("Albedo", al_out2[:, :, [2, 1, 0]])
+        # cv2.imshow("Recon", Irec[:, :, [2, 1, 0]])
+        # cv2.imshow("Shading", Ishd)
+        # cv2.waitKey(100)
+
+        plt.figure(0)
+        plt.subplot(231)
+        plt.imshow(o_im[:, :, [2, 1, 0]])
+        plt.title("Image")
+
+        plt.subplot(232)
+        plt.imshow(n_out2)
+        plt.title("Normal")
+
+        plt.subplot(233)
+        plt.imshow(al_out2)
+        plt.title("Albedo")
+
+        plt.subplot(236)
+        plt.imshow(Irec)
+        plt.title("Recon")
+
+        plt.subplot(235)
+        plt.imshow(Ishd)
+        plt.title("Shading")
+
+        plt.savefig(os.path.join(PROJECT_DIR, 'result', im_name))
+        plt.close()
 
 if __name__ == '__main__':
     _test()
