@@ -16,29 +16,30 @@ def create_shading_recon(n_out2, al_out2, light_out):
 
     la = lambertian_attenuation(3)
     HN1 = normal_harmonics(No1.T, la)
-    HS1r = HN1 * light_out[0:8]
-    HS1g = HN1 * light_out[9:17]
-    HS1b = HN1 * light_out[18:26]
+
+    HS1r = np.matmul(HN1, light_out[0:9])
+    HS1g = np.matmul(HN1, light_out[9:18])
+    HS1b = np.matmul(HN1, light_out[18:27])
 
     HS1 = np.zeros(shape=(M, M, 3))
-    HS1[:, :, 1]=np.reshape(HS1r, (M, M))
-    HS1[:, :, 2]=np.reshape(HS1g, (M, M))
-    HS1[:, :, 3]=np.reshape(HS1b, (M, M))
+    HS1[:, :, 0] = np.reshape(HS1r, (M, M))
+    HS1[:, :, 1] = np.reshape(HS1g, (M, M))
+    HS1[:, :, 2] = np.reshape(HS1b, (M, M))
     Tex1 = np.reshape(tex1, (M, M, 3)) * HS1
 
     IRen0 = Tex1
-    Shd = (200 / 255) * HS1  # 200 is added instead of 255 so that not to scale the shading to all white
+    Shd = (200 / 255.0) * HS1  # 200 is added instead of 255 so that not to scale the shading to all white
     Ishd0 = Shd
     return [IRen0, Ishd0]
 
 
 def lambertian_attenuation(n):
     # a = [.8862; 1.0233; .4954];
-    a = np.pi * [1, 2 / 3, .25]
+    a = [np.pi * i for i in [1.0, 2 / 3.0, .25]]
     if n > 3:
-        sys.stderr.write('didnt record more than 3 attenuations')
+        sys.stderr.write('didnt record more than 3 attenuation')
         exit(-1)
-    o = a[0:n - 1]
+    o = a[0:n]
     return o
 
 
@@ -62,9 +63,9 @@ def normal_harmonics(N, att):
     2,2e  (x.^2-y.^2) * 3*sqrt(5/(48*pi))
     2,2o  x*y * 3*sqrt(5/(12*pi))
     """
-    xs = N[1, :].T
-    ys = N[2, :].T
-    zs = N[3, :].T
+    xs = N[0, :].T
+    ys = N[1, :].T
+    zs = N[2, :].T
     a = np.sqrt(xs ** 2 + ys ** 2 + zs ** 2)
     denom = (a == 0) + a
     # %x = xs./a; y = ys./a; z = zs./a;
@@ -89,4 +90,9 @@ def normal_harmonics(N, att):
     H8 = att[2] * (3 * np.sqrt(5 / (48 * np.pi))) * ((x2 - y2) * a)
     H9 = att[2] * (3 * np.sqrt(5 / (12 * np.pi))) * (xy * a)
     H = [H1, H2, H3, H4, H5, H6, H7, H8, H9]
+
+    # --------add by wang -----------
+    H = [np.expand_dims(h, axis=1) for h in H]
+    H = np.concatenate(H, -1)
+    # -------------end---------------
     return H
