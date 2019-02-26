@@ -3,6 +3,7 @@
 import numpy as np
 import sys
 import os
+import shutil
 import cv2
 from matplotlib import pyplot as plt
 
@@ -44,6 +45,7 @@ def _test():
 
     # process every image
     for im_name in list_im:
+        print 'Processing ' + im_name
         # read image
         if dat_idx == 1:
             # read face image as BGR format
@@ -120,7 +122,7 @@ def _test():
 
         # Note: n_out2, al_out2, light_out is the actual output
         Irec, Ishd = create_shading_recon(n_out2, al_out2, light_out)
-        print Irec.shape, Ishd.shape
+        # print Irec.shape, Ishd.shape
 
         if dat_idx == 1:
             diff = (1 - mask) * np.ones(shape=(M, M, 3))
@@ -164,4 +166,8 @@ def _test():
 
 
 if __name__ == '__main__':
+    result_dir = os.path.join(PROJECT_DIR, 'result')
+    if os.path.exists(result_dir):
+        shutil.rmtree(result_dir)
+    os.mkdir(result_dir)
     _test()

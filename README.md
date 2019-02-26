@@ -12,3 +12,18 @@ Currently implemented:
 * Python 2.7
 * Caffe with pycaffe module
 * Python libs in requirements.txt
+
+# Run _test_SfSNet.py
+
+You should modify the variable CAFFE_ROOT in config.py 
+to your own caffe install directory. Then, install python
+dependencies using bash command:
+```bash
+pip install -r requirements.txt
+```
+then put your test images in 'Images', and 
+```bash
+python _test_SfSNet.py
+```
+and input 0 when the program tell you to input. the results
+will be saved in directory 'result' 
