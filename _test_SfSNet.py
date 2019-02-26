@@ -51,12 +51,9 @@ def _test():
             # get mask image's name
             mask_name = im_name.replace('face', 'mask')
             # read mask image as BGR format
-            Mask = cv2.imread(mask_name)
+            Mask = cv2.imread(os.path.join(PROJECT_DIR, 'Images_mask', mask_name))
             Mask = np.float32(Mask) / 255.0
             mask = cv2.resize(Mask, (M, M))
-            # -----------add by wang-------------
-            mask = np.expand_dims(mask, axis=-1)
-            # -----------end---------------------
         else:
             o_im = cv2.imread(os.path.join(PROJECT_DIR, 'Images', im_name))
             im = o_im.copy()
@@ -65,7 +62,7 @@ def _test():
         # prepare image
         # im=reshape(im,[size(im)]);
         im = np.float32(im)/255.0  # im=single(im)/255;
-        im = np.transpose(im, [1, 0, 2])  # m_data = permute(im_data, [2, 1, 3]); switch width and height
+        # im = np.transpose(im, [1, 0, 2])  # m_data = permute(im_data, [2, 1, 3]); switch width and height
 
         # -----------add by wang-------------
         im = np.transpose(im, [2, 0, 1])  # from (128, 128, 3) to (3, 128, 128)
@@ -106,68 +103,41 @@ def _test():
         # transform
         n_out2 = n_out[:, :, (2, 1, 0)]
         # print 'n_out2 shape', n_out2.shape
-        # n_out2 = cv2.rotate(n_out2, cv2.ROTATE_90_CLOCKWISE)  # imrotate(n_out2,-90)
-        # n_out2 = np.fliplr(n_out2)
+        n_out2 = cv2.rotate(n_out2, cv2.ROTATE_90_CLOCKWISE)  # imrotate(n_out2,-90)
+        n_out2 = np.fliplr(n_out2)
         n_out2 = 2*n_out2-1  # [-1 1]
-        nr = np.sqrt(np.sum(n_out2**2, axis=-1))  # nr=sqrt(sum(n_out2.^2,3))
+        nr = np.sqrt(np.sum(n_out2**2, axis=2))  # nr=sqrt(sum(n_out2.^2,3))
         nr = np.expand_dims(nr, axis=2)
         n_out2 = n_out2/np.repeat(nr, 3, axis=2)
         # print 'nr shape', nr.shape
 
-        # al_out2 = cv2.rotate(al_out, cv2.ROTATE_90_CLOCKWISE)
-        al_out2 = al_out
+        al_out2 = cv2.rotate(al_out, cv2.ROTATE_90_CLOCKWISE)
         al_out2 = al_out2[:, :, (2, 1, 0)]
-        # al_out2 = np.fliplr(al_out2)
+        al_out2 = np.fliplr(al_out2)
 
         # Note: n_out2, al_out2, light_out is the actual output
         Irec, Ishd = create_shading_recon(n_out2, al_out2, light_out)
         print Irec.shape, Ishd.shape
 
-        # plt.figure(1)
         if dat_idx == 1:
-            # plt.subplot(231)
-            # plt.imshow(o_im[:, :, [2, 1, 0]])
-            # plt.title('Image')
-            #
-            # plt.subplot(2, 3, 2)
-            # plt.imshow(((1 + n_out2) / 2) * mask + (1 - mask) * np.ones(shape=(M, M, 3)))
-            # plt.title('Normal')
-            #
-            # plt.subplot(2, 3, 3)
-            # plt.imshow(al_out2 * mask + (1 - mask) * np.ones(shape=(M, M, 3)))
-            # plt.title('Albedo')
-            #
-            # plt.subplot(2, 3, 5)
-            # plt.imshow(Ishd * mask + (1 - mask) * np.ones(shape=(M, M, 3)))
-            #
-            # plt.title('Shading')
-            # plt.subplot(2, 3, 6)
-            # plt.imshow(Irec * mask + (1 - mask) * np.ones(shape=(M, M, 3)))
-            # plt.title('Recon')
+            diff = (1 - mask) * np.ones(shape=(M, M, 3))
+            n_out2 = ((1 + n_out2) / 2) * mask + diff
+            al_out2 = al_out2 * mask + diff
+            Ishd = Ishd * mask + diff
+            Irec = Irec * mask + diff
             cv2.imshow("Image", o_im)
             cv2.imshow("Normal", n_out2[:, :, [2, 1, 0]])
             cv2.imshow("Albedo", al_out2[:, :, [2, 1, 0]])
             cv2.imshow("Recon", Irec[:, :, [2, 1, 0]])
-            cv2.imshow("Shading", Ishd[:, :, [2, 1, 0]])
-            cv2.waitKey(0)
+            cv2.imshow("Shading", Ishd)
+            cv2.waitKey(500)
         else:
-            plt.subplot(231)
-            plt.imshow(o_im[:, :, [2, 1, 0]])
-            plt.title('Image')
-            plt.subplot(232)
-            plt.imshow((1+n_out2)/2)
-            plt.title('Normal')
-            plt.subplot(233)
-            plt.imshow(al_out2)
-            plt.title('Albedo')
-            plt.subplot(234)
-            plt.imshow(Ishd)
-            plt.title('Shading')
-            plt.subplot(235)
-            plt.imshow(Irec)
-            plt.title('Recon')
-        plt.savefig(os.path.join(PROJECT_DIR, 'result', im_name))
-        plt.close()
+            cv2.imshow("Image", o_im)
+            cv2.imshow("Normal", n_out2[:, :, [2, 1, 0]])
+            cv2.imshow("Albedo", al_out2[:, :, [2, 1, 0]])
+            cv2.imshow("Recon", Irec[:, :, [2, 1, 0]])
+            cv2.imshow("Shading", Ishd)
+            cv2.waitKey(500)
 
 
 if __name__ == '__main__':
