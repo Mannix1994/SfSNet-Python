@@ -8,21 +8,24 @@ from matplotlib import pyplot as plt
 
 from config import *
 from functions import create_shading_recon
+
+# the two lines add pycaffe support
 sys.path.insert(0, os.path.join(CAFFE_ROOT, 'python'))
 import caffe
 
 
 def _test():
-    # set gpu mode
+    # set gpu mode, if you don't have gpu, use caffe.set_mode_cpu()
     caffe.set_mode_gpu()
     caffe.set_device(GPU_ID)
+    # caffe.set_mode_cpu()
 
     # load model and weights
     net = caffe.Net(MODEL, WEIGHTS, caffe.TEST)
 
     # choose dataset
-    # dat_idx = input('Please enter 1 for images with masks and 0 for images without mask: ')
-    dat_idx = 0
+    dat_idx = input('Please enter 1 for images with masks and 0 for images without mask: ')
+    # dat_idx = 0
     if dat_idx:
         # Images and masks are provided
         list_im = sorted(os.listdir('Images_mask/'))
@@ -30,7 +33,7 @@ def _test():
         dat_idx = 1
     elif dat_idx == 0:
         # No mask provided (Need to use your own mask).
-        list_im = sorted(os.listdir('Images1/'))
+        list_im = sorted(os.listdir('Images/'))
         list_im = [im for im in list_im if im.endswith('.png') or im.endswith('.jpg')]
         dat_idx = 0  # Uncomment to test with this mode
     else:
@@ -55,7 +58,7 @@ def _test():
             Mask = np.float32(Mask) / 255.0
             mask = cv2.resize(Mask, (M, M))
         else:
-            o_im = cv2.imread(os.path.join(PROJECT_DIR, 'Images1', im_name))
+            o_im = cv2.imread(os.path.join(PROJECT_DIR, 'Images', im_name))
             im = o_im.copy()
             im = cv2.resize(im, (M, M))
 
@@ -65,9 +68,9 @@ def _test():
         # im = np.transpose(im, [1, 0, 2])  # m_data = permute(im_data, [2, 1, 3]); switch width and height
 
         # -----------add by wang-------------
-        im = np.transpose(im, [2, 0, 1])  # from (128, 128, 3) to (3, 128, 128)
+        im = np.transpose(im, [2, 0, 1])  # from (128, 128, 3) to (1, 3, 128, 128)
         im = np.expand_dims(im, 0)
-        print 'data shape', im.shape
+        # print 'im shape', im.shape
         # -----------end---------------------
 
         # set image data, pass images
@@ -158,6 +161,7 @@ def _test():
 
         plt.savefig(os.path.join(PROJECT_DIR, 'result', im_name))
         plt.close()
+
 
 if __name__ == '__main__':
     _test()
