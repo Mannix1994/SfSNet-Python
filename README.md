@@ -5,7 +5,7 @@ if I have enough time.
 
 Currently implemented:
 * Implement test_SfSNet.m as _test_SfSNet.py
-* Partially implement functions/*m in functions.py
+* Partially implement functions/*.m in functions.py
 * move some constant variables to config.py 
 
 # Dependencies
@@ -17,7 +17,7 @@ Currently implemented:
 
 You should modify the variable CAFFE_ROOT in config.py 
 to your own caffe install directory. Then, install python
-dependencies using bash command:
+dependencies using command:
 ```bash
 pip install -r requirements.txt
 ```
