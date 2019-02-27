@@ -36,7 +36,7 @@ cmake -D CMAKE_INSTALL_PREFIX=/opt/caffe ..
 ```
 CMAKE_INSTALL_PREFIX specify the install directory, caffe will
 be install to /opt/caffe. cmake's output is like:
-```bash
+```
 -- ******************* Caffe Configuration Summary *******************
 -- General:
 --   Version           :   1.0.0
@@ -84,6 +84,7 @@ be install to /opt/caffe. cmake's output is like:
 --   Install path      :   /opt/caffe
 ```
 
+then:
 ```bash
 # replace 8 with your cpu kernel count
 make all -j8
