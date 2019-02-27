@@ -5,8 +5,13 @@ if I have enough time.
 
 Currently implemented:
 * Implement test_SfSNet.m as _test_SfSNet.py
-* Partially implement functions/*.m in functions.py
+* Implement functions/*.m in functions.py
 * move some constant variables to config.py 
+
+Note: create_mask_fiducial still have some problem, but it
+ don't used in _test_SfSNet.py.  
+ 
+If there are bugs in _test_SfSNet.py, please open a issue.
 
 # Dependencies
 * Python 2.7
