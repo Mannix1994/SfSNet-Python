@@ -99,7 +99,7 @@ def normal_harmonics(N, att):
     return H
 
 
-def create_mask_fiducial(fiducials,Image):
+def create_mask_fiducial(fiducials, Image):
     """
 
     :param fiducials:
@@ -109,6 +109,7 @@ def create_mask_fiducial(fiducials,Image):
     :return:
     """
     # fiducals is 2x68
+    fiducials = np.float32(fiducials)
     border_fid = fiducials[:, 0:17]
     face_fid = fiducials[:, 17:]
 
@@ -126,14 +127,13 @@ def create_mask_fiducial(fiducials,Image):
 
     M = Image.shape[0]
 
-    a = np.arange(0, M, step=1, dtype=np.int)
-    print a.shape
+    a = np.arange(0, M, step=1, dtype=np.float32)
     X, Y = np.meshgrid(a, a)
 
     _in, _on = inpolygon(X, Y, border[0, :].T, border[1, :].T)
 
     mask = np.round(np.reshape(_in | _on, [M, M]))
-    mask = 255*np.uint8(mask)
+    mask = 255 * np.uint8(mask)
     mask = np.repeat(np.expand_dims(mask, -1), 3, axis=-1)
     return mask
 
@@ -160,4 +160,3 @@ def inpolygon(xq, yq, xv, yv):
     # get the points on path
     _on = _in ^ _in_on
     return _in_on, _on
-

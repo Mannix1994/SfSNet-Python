@@ -33,7 +33,7 @@ def _create_fiducials():
 
 def _test_create_mask_fiducial():
     fiducials = _create_fiducials()
-    Image = np.ones((128, 128, 128))
+    Image = np.ones((128, 128, 3))
     mask = create_mask_fiducial(fiducials, Image)
     import cv2
     cv2.imshow("mask", mask)
@@ -41,7 +41,7 @@ def _test_create_mask_fiducial():
 
 
 if __name__ == '__main__':
-    # _test_inpolygon()
+    _test_inpolygon()
     _test_create_mask_fiducial()
 else:
     raise RuntimeError('func_test.py shouldn\'t be imported')
