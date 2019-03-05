@@ -13,6 +13,7 @@ from functions import create_shading_recon
 # the two lines add pycaffe support
 sys.path.insert(0, os.path.join(CAFFE_ROOT, 'python'))
 import caffe
+from mask import MaskGenerator
 
 
 def _test():
@@ -25,8 +26,8 @@ def _test():
     net = caffe.Net(MODEL, WEIGHTS, caffe.TEST)
 
     # choose dataset
-    dat_idx = input('Please enter 1 for images with masks and 0 for images without mask: ')
-    # dat_idx = 0
+    # dat_idx = input('Please enter 1 for images with masks and 0 for images without mask: ')
+    dat_idx = 0
     if dat_idx:
         # Images and masks are provided
         list_im = sorted(os.listdir('Images_mask/'))
@@ -40,8 +41,12 @@ def _test():
     else:
         sys.stderr.write('Wrong Option!')
         list_im = None
+        exit(-1)
 
     print list_im, dat_idx
+
+    # define a mask generator
+    mg = MaskGenerator()
 
     # process every image
     for im_name in list_im:
@@ -63,6 +68,8 @@ def _test():
             o_im = cv2.imread(os.path.join(PROJECT_DIR, 'Images', im_name))
             im = o_im.copy()
             im = cv2.resize(im, (M, M))
+            # im = mg.get_masked_face(im)
+            mask = mg.get_mask(im)
 
         # prepare image
         # im=reshape(im,[size(im)]);
@@ -122,16 +129,15 @@ def _test():
 
         # Note: n_out2, al_out2, light_out is the actual output
         Irec, Ishd = create_shading_recon(n_out2, al_out2, light_out)
-        # print Irec.shape, Ishd.shape
 
-        if dat_idx == 1:
-            diff = (1 - mask) * np.ones(shape=(M, M, 3))
-            n_out2 = ((1 + n_out2) / 2) * mask + diff
-            al_out2 = al_out2 * mask + diff
-            Ishd = Ishd * mask + diff
-            Irec = Irec * mask + diff
-        else:
-            pass
+        diff = (mask/255)
+
+        # cv2.imshow('mask', mask)
+        # cv2.waitKey(0)
+        n_out2 = n_out2 * diff
+        al_out2 = al_out2 * diff
+        Ishd = Ishd * diff
+        Irec = Irec * diff
 
         # cv2.imshow("Image", o_im)
         # cv2.imshow("Normal", n_out2[:, :, [2, 1, 0]])
