@@ -8,9 +8,6 @@ Currently implemented:
 * Implement functions/*.m in functions.py
 * move some constant variables to config.py 
 
-Note: create_mask_fiducial still have some problem, but it
- don't used in _test_SfSNet.py.  
- 
 If there are bugs in _test_SfSNet.py, please open a issue.
 
 # Dependencies
