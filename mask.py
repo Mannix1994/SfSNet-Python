@@ -21,41 +21,44 @@ class MaskGenerator:
         self._predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
         self._d = MTCNN()
 
-    def get_mask(self, image):
+    def get_mask(self, image, crop_size=(128, 128), scale=3.5):
         """
+        :param scale:
+        :param crop_size:
         :type image: np.ndarray
         :param image: BGR face image
         :return: a face image with mask
         https://blog.csdn.net/qq_39438636/article/details/79304130
         """
-        # try:
-        #     face = self._d.align(image, crop_size=(128, 128), scale=3.5)
-        #     cv2.imshow('o_face', image)
-        #     cv2.imshow('face', face)
-        #     cv2.waitKey(50)
-        # except:
-        #     sys.stderr.write("%s: failed to align\n" % __file__)
-        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        face_rects = self._detector(gray_image, 0)
-        # print(face_rects)
-        # g = cv2.circle(image, (face_rects[0].left(), face_rects[0].top()), 5, (0, 255, 0))
-        # g = cv2.circle(g, (face_rects[0].right(), face_rects[0].bottom()), 5, (0, 255, 0))
-        # cv2.imshow("gray_image", g)
-        # cv2.waitKey(0)
-        # exit()
-        for i in range(len(face_rects)):
-            landmarks = np.array([[p.x, p.y] for p in self._predictor(image, face_rects[i]).parts()])
-            mask = create_mask_fiducial(landmarks.T, image)
-            return mask
-        else:
-            sys.stderr.write("%s: Can't detect face in image\n" % __file__)
-            return np.ones(image.shape) * 255
+        try:
+            face = self._d.align(image, crop_size,scale)
+            # cv2.imshow('o_face', image)
+            # cv2.imshow('face', face)
+            # cv2.waitKey(50)
+            gray_image = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+            face_rects = self._detector(gray_image, 0)
+            # print(face_rects)
+            # g = cv2.circle(image, (face_rects[0].left(), face_rects[0].top()), 5, (0, 255, 0))
+            # g = cv2.circle(g, (face_rects[0].right(), face_rects[0].bottom()), 5, (0, 255, 0))
+            # cv2.imshow("gray_image", g)
+            # cv2.waitKey(0)
+            # exit()
+            for i in range(len(face_rects)):
+                landmarks = np.array([[p.x, p.y] for p in self._predictor(face, face_rects[i]).parts()])
+                mask = create_mask_fiducial(landmarks.T, face)
+                return mask, face
+            else:
+                sys.stderr.write("%s: Can't detect face in image\n" % __file__)
+                return np.ones(face.shape) * 255, face
+        except:
+            sys.stderr.write("%s: failed to align\n" % __file__)
+            return np.ones(image.shape) * 255, image
 
     def get_masked_face(self, image):
-        mask = self.get_mask(image)
+        mask, face = self.get_mask(image)
         # cv2.imshow('mask', mask)
         # cv2.waitKey(50)
-        return mask & image
+        return mask & face
 
 
 if __name__ == '__main__':
