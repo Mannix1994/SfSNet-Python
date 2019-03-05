@@ -101,10 +101,10 @@ def normal_harmonics(N, att):
 
 def create_mask_fiducial(fiducials, Image):
     """
-
-    :param fiducials:
+    create mask use fiducials of Image
+    :param fiducials: the 68 landmarks detected using dlib
     :type fiducials np.ndarray
-    :param Image:
+    :param Image: a 3-channel image
     :type Image np.ndarray
     :return:
     """
@@ -125,14 +125,16 @@ def create_mask_fiducial(fiducials, Image):
     border = [item.reshape(2, -1) for item in border]
     border = np.hstack(border)
 
-    M = Image.shape[0]
+    M = Image.shape[0]  # row -> y
+    N = Image.shape[1]  # col -> x
 
-    a = np.arange(0, M, step=1, dtype=np.float32)
-    X, Y = np.meshgrid(a, a)
+    y = np.arange(0, M, step=1, dtype=np.float32)
+    x = np.arange(0, N, step=1, dtype=np.float32)
+    X, Y = np.meshgrid(x, y)
 
     _in, _on = inpolygon(X, Y, border[0, :].T, border[1, :].T)
 
-    mask = np.round(np.reshape(_in | _on, [M, M]))
+    mask = np.round(np.reshape(_in | _on, [M, N]))
     mask = 255 * np.uint8(mask)
     mask = np.repeat(np.expand_dims(mask, -1), 3, axis=-1)
     return mask
