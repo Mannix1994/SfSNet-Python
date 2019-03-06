@@ -9,6 +9,7 @@ import numpy as np
 from PIL import Image
 from functions import create_mask_fiducial
 from mtcnn_pytorch.mtcnn import MTCNN
+import logging
 
 
 class MaskGenerator:
@@ -31,27 +32,23 @@ class MaskGenerator:
         https://blog.csdn.net/qq_39438636/article/details/79304130
         """
         try:
-            face = self._d.align(image, crop_size,scale)
-            # cv2.imshow('o_face', image)
-            # cv2.imshow('face', face)
+            boxes, face = self._d.align(image, crop_size, scale)
+            print(boxes)
+            face_rects = []
+            for b in boxes:
+                face_rects.append(dlib.rectangle(*b))
+            # b_im = face.copy()
+            # cv2.rectangle(b_im, (face_rects[0].left(), face_rects[0].top()),
+            #               (face_rects[0].right(), face_rects[0].bottom()), (255, 255, 0))
+            # cv2.imshow("b_im", b_im)
             # cv2.waitKey(50)
-            gray_image = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
-            face_rects = self._detector(gray_image, 0)
-            # print(face_rects)
-            # g = cv2.circle(image, (face_rects[0].left(), face_rects[0].top()), 5, (0, 255, 0))
-            # g = cv2.circle(g, (face_rects[0].right(), face_rects[0].bottom()), 5, (0, 255, 0))
-            # cv2.imshow("gray_image", g)
-            # cv2.waitKey(0)
-            # exit()
             for i in range(len(face_rects)):
                 landmarks = np.array([[p.x, p.y] for p in self._predictor(face, face_rects[i]).parts()])
                 mask = create_mask_fiducial(landmarks.T, face)
                 return mask, face
-            else:
-                sys.stderr.write("%s: Can't detect face in image\n" % __file__)
-                return np.ones(face.shape) * 255, face
-        except:
+        except BaseException as e:
             sys.stderr.write("%s: failed to align\n" % __file__)
+            logging.exception(e)
             return np.ones(image.shape) * 255, image
 
     def get_masked_face(self, image):

@@ -71,7 +71,7 @@ def _test():
             mask, im = mg.get_mask(im)
             cv2.imshow('mask', mask)
             cv2.imshow('im', im)
-            cv2.waitKey(500)
+            cv2.waitKey(0)
             im = cv2.resize(im, (M, M))
             mask = cv2.resize(mask, (M, M))
 

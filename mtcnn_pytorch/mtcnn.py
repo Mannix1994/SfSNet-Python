@@ -12,6 +12,7 @@ import sys
 
 # device = 'cpu'
 
+
 class MTCNN:
     def __init__(self):
         self._p_net = PNet().to(device)
@@ -26,12 +27,12 @@ class MTCNN:
         assert isinstance(image, np.ndarray)
         pil_image = Image.fromarray(image)
         _, landmarks = self.detect_faces(pil_image)
-        sys.stdout.write("len(landmarks[0]): %d \n" % len(landmarks[0]))
         face_5_key_points = [[landmarks[0][j], landmarks[0][j + 5]] for j in range(5)]
         # self.view_landmarks(image, np.array(face_5_key_points))
-        warped_face = self.warp_and_crop_face(image, face_5_key_points, crop_size, scale)
+        warped_face = self._warp_and_crop_face(image, face_5_key_points, crop_size, scale)
         # warped_face = warp_and_crop_face(np.array(image), face_5_key_points, self._reference, crop_size=crop_size)
-        return warped_face
+        boxes, _ = self.detect_faces(Image.fromarray(warped_face.copy()))
+        return self._reshape_box(boxes), warped_face
 
     def view_landmarks(self, image, landmarks):
         """
@@ -45,7 +46,7 @@ class MTCNN:
             cv2.imshow('cv2.circle', im)
         cv2.waitKey(50)
 
-    def warp_and_crop_face(self, image, landmarks, crop_size=(128, 128), scale=3.0):
+    def _warp_and_crop_face(self, image, landmarks, crop_size, scale):
         """
         :param scale:
         :param image:
@@ -67,22 +68,29 @@ class MTCNN:
 
         # compute crop size
         cropped_image = self._crop_image(rotated_image, landmarks, scale)
-        # compute box
         # resize image
         resize_image = cv2.resize(cropped_image, crop_size)
-
+        # computing bounding box
         return resize_image
 
-    def _crop_image(self, image, landmarks, scale=3.0):
+    def _reshape_box(self, boxes):
+        boxes = np.array(boxes)
+        reshape_boxes = []
+        for b in boxes:
+            b = b[0:4]
+            reshape_boxes.append(b)
+        return np.array(reshape_boxes).astype(dtype=np.int32)
+
+    def _crop_image(self, image, landmarks, scale):
         # compute the distance between left eye(landmarks[0]) and left mouth point[landmarks[3]]
         distance = np.sqrt(np.sum(np.square(landmarks[0]-landmarks[3])))
         size = distance * scale
         # compute row_start, row_end, col_start, col_end
-        nose_point = landmarks[2]
-        row_start = int(nose_point[1]-size/2)
-        row_end = int(nose_point[1]+size/2)
-        col_start = int(nose_point[0]-size/2)
-        col_end = int(nose_point[0]+size/2)
+        landmark_nose = landmarks[2]
+        row_start = int(landmark_nose[1]-size/2)
+        row_end = int(landmark_nose[1]+size/2)
+        col_start = int(landmark_nose[0]-size/2)
+        col_end = int(landmark_nose[0]+size/2)
         # make range valid
         row_start = row_start if row_start > 0 else 0
         row_end = row_end if row_end < image.shape[0] else image.shape[0]
