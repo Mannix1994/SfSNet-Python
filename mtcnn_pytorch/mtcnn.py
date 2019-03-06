@@ -1,3 +1,4 @@
+# coding=utf8
 import numpy as np
 import cv2
 import torch
@@ -26,11 +27,15 @@ class MTCNN:
     def align(self, image, crop_size=(128, 128), scale=3.0):
         assert isinstance(image, np.ndarray)
         pil_image = Image.fromarray(image)
+        # 计算五个标记点
         _, landmarks = self.detect_faces(pil_image)
         face_5_key_points = [[landmarks[0][j], landmarks[0][j + 5]] for j in range(5)]
+        # 可视化标记点
         # self.view_landmarks(image, np.array(face_5_key_points))
+        # 裁剪人脸
         warped_face = self._warp_and_crop_face(image, face_5_key_points, crop_size, scale)
         # warped_face = warp_and_crop_face(np.array(image), face_5_key_points, self._reference, crop_size=crop_size)
+        # 计算包围脸的正方形
         boxes, _ = self.detect_faces(Image.fromarray(warped_face.copy()))
         return self._reshape_box(boxes), warped_face
 
@@ -77,7 +82,7 @@ class MTCNN:
         boxes = np.array(boxes)
         reshape_boxes = []
         for b in boxes:
-            b = b[0:4]
+            b = b[0:4]  # 只取前四个，最后一个是概率
             reshape_boxes.append(b)
         return np.array(reshape_boxes).astype(dtype=np.int32)
 
