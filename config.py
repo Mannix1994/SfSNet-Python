@@ -19,6 +19,9 @@ GPU_ID = 0
 # image's size, DO NOT CHANGE!
 M = 128  # size of input for SfSNet
 
+# landmarks's path
+LANDMARK_PATH = 'shape_predictor_68_face_landmarks.dat'
+
 if __name__ == '__main__':
     print PROJECT_DIR
     print MODEL

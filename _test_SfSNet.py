@@ -46,7 +46,7 @@ def _test():
     print list_im, dat_idx
 
     # define a mask generator
-    mg = MaskGenerator()
+    mg = MaskGenerator(LANDMARK_PATH)
 
     # process every image
     for im_name in list_im:
