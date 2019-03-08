@@ -8,18 +8,17 @@ import sys
 import numpy as np
 from PIL import Image
 from functions import create_mask_fiducial
-from mtcnn_pytorch.mtcnn import MTCNN
 
 
 class MaskGenerator:
-    def __init__(self, path='shape_predictor_68_face_landmarks.dat'):
+    def __init__(self, landmarks_path='shape_predictor_68_face_landmarks.dat'):
         """
-        :param path: the path of pretrained key points weight, it could be download from
+        :param landmarks_path: the path of pretrained key points weight,
+        it could be download from:
         http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
         """
         self._detector = dlib.get_frontal_face_detector()
-        self._predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
-        self._d = MTCNN()
+        self._predictor = dlib.shape_predictor(landmarks_path)
 
     def get_mask(self, image):
         """
@@ -28,21 +27,10 @@ class MaskGenerator:
         :return: a face image with mask
         https://blog.csdn.net/qq_39438636/article/details/79304130
         """
-        # try:
-        #     face = self._d.align(image, crop_size=(128, 128), scale=3.5)
-        #     cv2.imshow('o_face', image)
-        #     cv2.imshow('face', face)
-        #     cv2.waitKey(50)
-        # except:
-        #     sys.stderr.write("%s: failed to align\n" % __file__)
+        # convert to gray image
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # 检测人脸矩形
         face_rects = self._detector(gray_image, 0)
-        # print(face_rects)
-        # g = cv2.circle(image, (face_rects[0].left(), face_rects[0].top()), 5, (0, 255, 0))
-        # g = cv2.circle(g, (face_rects[0].right(), face_rects[0].bottom()), 5, (0, 255, 0))
-        # cv2.imshow("gray_image", g)
-        # cv2.waitKey(0)
-        # exit()
         for i in range(len(face_rects)):
             landmarks = np.array([[p.x, p.y] for p in self._predictor(image, face_rects[i]).parts()])
             mask = create_mask_fiducial(landmarks.T, image)
