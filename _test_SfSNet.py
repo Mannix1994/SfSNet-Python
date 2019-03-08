@@ -67,9 +67,10 @@ def _test():
         else:
             o_im = cv2.imread(os.path.join(PROJECT_DIR, 'Images', im_name))
             im = o_im.copy()
-            im = cv2.resize(im, (M, M))
-            # im = mg.get_masked_face(im)
-            mask = mg.get_mask(im)
+            mask, im = mg.align(im, crop_size=(M, M))
+            cv2.imshow("mask", mask)
+            cv2.imshow("image", im)
+            cv2.waitKey(0)
 
         # prepare image
         # im=reshape(im,[size(im)]);
