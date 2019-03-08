@@ -6,7 +6,7 @@ import dlib
 import cv2
 import sys
 import numpy as np
-from SfSNet.functions import create_mask_fiducial
+from functions import create_mask_fiducial
 
 
 class MaskGenerator:

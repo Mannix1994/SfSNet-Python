@@ -48,6 +48,7 @@ class SfSNet:
         :return: cropped_face, albedo, normal, shading
         """
         mask, im = self.mg.align(image, crop_size=(M, M))
+        o_im = im.copy()
         if show:
             cv2.imshow("mask", mask)
             cv2.imshow("image", im)
@@ -121,4 +122,22 @@ class SfSNet:
         Ishd = np.float32(Ishd)
         Ishd = cv2.cvtColor(Ishd, cv2.COLOR_RGB2GRAY)
         Ishd = cv2.cvtColor(Ishd, cv2.COLOR_GRAY2RGB)
-        return im, n_out2, al_out2, Irec, Ishd
+        return o_im, n_out2, al_out2, Irec, Ishd
+
+
+if __name__ == '__main__':
+    from config import *
+    sfsnet = SfSNet(MODEL, WEIGHTS, GPU_ID, '../shape_predictor_68_face_landmarks.dat')
+
+    image = cv2.imread('Images/4.png_face.png')
+
+    face, shape, albedo, reconstruction, shading = sfsnet.forward(image)
+
+    print face.shape, shape.shape, albedo.shape, reconstruction.shape, shading.shape
+    t1 = np.hstack((face, shape))
+    t2 = np.hstack((albedo, reconstruction))
+    t = np.vstack((t1, t2))
+
+    cv2.imshow('result', t)
+    cv2.imshow('shading', shading)
+    cv2.waitKey(0)
