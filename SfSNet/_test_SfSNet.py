@@ -48,6 +48,11 @@ def _test():
     # define a mask generator
     mg = MaskGenerator(LANDMARK_PATH)
 
+    l_image = []
+    l_normal = []
+    l_albedo = []
+    l_recon = []
+    l_shading = []
     # process every image
     for im_name in list_im:
         print 'Processing ' + im_name
@@ -70,7 +75,7 @@ def _test():
             mask, im = mg.align(im, crop_size=(M, M))
             cv2.imshow("mask", mask)
             cv2.imshow("image", im)
-            cv2.waitKey(0)
+            cv2.waitKey(50)
 
         # prepare image
         # im=reshape(im,[size(im)]);
@@ -140,35 +145,39 @@ def _test():
         Ishd = Ishd * diff
         Irec = Irec * diff
 
-        # cv2.imshow("Image", o_im)
-        # cv2.imshow("Normal", n_out2[:, :, [2, 1, 0]])
-        # cv2.imshow("Albedo", al_out2[:, :, [2, 1, 0]])
-        # cv2.imshow("Recon", Irec[:, :, [2, 1, 0]])
-        # cv2.imshow("Shading", Ishd)
-        # cv2.waitKey(100)
+        Ishd = np.float32(Ishd)
+        Ishd = cv2.cvtColor(Ishd, cv2.COLOR_RGB2GRAY)
+        Ishd = cv2.cvtColor(Ishd, cv2.COLOR_GRAY2RGB)
 
-        plt.figure(0)
-        plt.subplot(231)
-        plt.imshow(o_im[:, :, [2, 1, 0]])
-        plt.title("Image")
+        l_image.append(o_im[:, :, [2, 1, 0]])
+        l_albedo.append(al_out2)
+        l_normal.append(n_out2)
+        l_recon.append(Irec)
+        l_shading.append(Ishd)
 
-        plt.subplot(232)
-        plt.imshow(n_out2)
-        plt.title("Normal")
+    # 保存结果
+    save(l_image, PROJECT_DIR, 'result', 'origin')
+    save(l_albedo, PROJECT_DIR, 'result', 'albedo')
+    save(l_albedo, PROJECT_DIR, 'result', 'albedo')
+    save(l_recon, PROJECT_DIR, 'result', 'recon')
+    save(l_shading, PROJECT_DIR, 'result', 'shading')
 
-        plt.subplot(233)
-        plt.imshow(al_out2)
-        plt.title("Albedo")
 
-        plt.subplot(236)
-        plt.imshow(Irec)
-        plt.title("Recon")
-
-        plt.subplot(235)
-        plt.imshow(Ishd)
-        plt.title("Shading")
-
-        plt.savefig(os.path.join(PROJECT_DIR, 'result', im_name))
+def save(im_list, PROJECT_DIR, sub_dir, imname):
+    # 每行三张, 每张图三行
+    col = 3
+    row = 3
+    # 计算需要多少张图
+    count = np.ceil(len(im_list)/float(col*row))
+    for i in range(int(count)):
+        plt.figure(1, figsize=(30, 30))
+        plt.tight_layout()
+        # 显示图像
+        for index, im in enumerate(im_list[i*row*col:(i+1)*row*col]):
+            plt.subplot(row, col, index+1)
+            plt.imshow(im)
+        # 保存图像
+        plt.savefig(os.path.join(PROJECT_DIR, sub_dir, '%s_%d.png' % (imname, i)))
         plt.close()
 
 

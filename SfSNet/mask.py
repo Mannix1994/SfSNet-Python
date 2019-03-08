@@ -6,8 +6,7 @@ import dlib
 import cv2
 import sys
 import numpy as np
-from PIL import Image
-from functions import create_mask_fiducial
+from SfSNet.functions import create_mask_fiducial
 
 
 class MaskGenerator:
@@ -54,7 +53,7 @@ class MaskGenerator:
         else:
             sys.stderr.write("%s: Can't detect face in image\n" % __file__)
             image = cv2.resize(image, crop_size)
-            return np.ones(image.shape) * 255, image
+            return None, image
 
     def _warp_and_crop_face(self, image, mask, landmarks, crop_size, scale):
         """
