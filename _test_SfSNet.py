@@ -68,7 +68,7 @@ def _test():
             o_im = cv2.imread(os.path.join(PROJECT_DIR, 'Images', im_name))
             im = o_im.copy()
             # im = mg.get_masked_face(im)
-            mask, im = mg.get_mask(im)
+            mask, im = mg.get_mask(im, crop_size=(128, 128), show_rectangle=True, show_landmarks=True)
             cv2.imshow('mask', mask)
             cv2.imshow('im', im)
             cv2.waitKey(0)

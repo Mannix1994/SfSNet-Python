@@ -36,8 +36,8 @@ class MTCNN:
         warped_face = self._warp_and_crop_face(image, face_5_key_points, crop_size, scale)
         # warped_face = warp_and_crop_face(np.array(image), face_5_key_points, self._reference, crop_size=crop_size)
         # 计算包围脸的正方形
-        boxes, _ = self.detect_faces(Image.fromarray(warped_face.copy()))
-        return self._reshape_box(boxes), warped_face
+        box = self._compute_box(crop_size, scale*0.1)
+        return [box, ], warped_face
 
     def view_landmarks(self, image, landmarks):
         """
@@ -50,6 +50,29 @@ class MTCNN:
             cv2.circle(im, tuple(landmarks[i]), 1, (0, 255, 0))
             cv2.imshow('cv2.circle', im)
         cv2.waitKey(50)
+
+    def _compute_box(self, crop_size, box_scale):
+        """
+        计算一个包围脸的正方形
+        :param crop_size:
+        :param box_scale:
+        :return:
+        """
+        size = crop_size[0]
+        center_x = size/2.0
+        center_y = center_x
+
+        left = center_x - size * box_scale
+        top = center_y - size * box_scale
+        right = center_x + size * box_scale
+        bottom = center_y + size * box_scale
+
+        left = left if left > 0 else 0
+        top = top if top > 0 else 0
+        right = right if right < size else size
+        bottom = bottom if bottom < size else size
+
+        return int(left), int(top), int(right), int(bottom)
 
     def _warp_and_crop_face(self, image, landmarks, crop_size, scale):
         """
