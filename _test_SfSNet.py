@@ -68,9 +68,9 @@ def _test():
             o_im = cv2.imread(os.path.join(PROJECT_DIR, 'Images', im_name))
             im = o_im.copy()
             mask, im = mg.align(im, crop_size=(M, M))
-            cv2.imshow("mask", mask)
-            cv2.imshow("image", im)
-            cv2.waitKey(0)
+            # cv2.imshow("mask", mask)
+            # cv2.imshow("image", im)
+            # cv2.waitKey(0)
 
         # prepare image
         # im=reshape(im,[size(im)]);
@@ -140,13 +140,27 @@ def _test():
         Ishd = Ishd * diff
         Irec = Irec * diff
 
-        # cv2.imshow("Image", o_im)
-        # cv2.imshow("Normal", n_out2[:, :, [2, 1, 0]])
-        # cv2.imshow("Albedo", al_out2[:, :, [2, 1, 0]])
-        # cv2.imshow("Recon", Irec[:, :, [2, 1, 0]])
-        # cv2.imshow("Shading", Ishd)
-        # cv2.waitKey(100)
+        # -----------add by wang------------
+        Ishd = np.float32(Ishd)
+        Ishd = cv2.cvtColor(Ishd, cv2.COLOR_RGB2GRAY)
 
+        al_out2 = (al_out2 * 255).astype(dtype=np.uint8)
+        Irec = (Irec * 255).astype(dtype=np.uint8)
+        Ishd = (Ishd * 255).astype(dtype=np.uint8)
+
+        al_out2 = cv2.cvtColor(al_out2, cv2.COLOR_RGB2BGR)
+        n_out2 = cv2.cvtColor(n_out2, cv2.COLOR_RGB2BGR)
+        Irec = cv2.cvtColor(Irec, cv2.COLOR_RGB2BGR)
+        # -------------end---------------------
+        cv2.imshow("Image", o_im)
+        cv2.imshow("Mask", mask)
+        cv2.imshow("Normal", n_out2)
+        cv2.imshow("Albedo", al_out2)
+        cv2.imshow("Recon", Irec)
+        cv2.imshow("Shading", Ishd)
+        cv2.waitKey(500)
+
+        """
         plt.figure(0)
         plt.subplot(231)
         plt.imshow(o_im[:, :, [2, 1, 0]])
@@ -170,6 +184,7 @@ def _test():
 
         plt.savefig(os.path.join(PROJECT_DIR, 'result', im_name))
         plt.close()
+        """
 
 
 if __name__ == '__main__':
