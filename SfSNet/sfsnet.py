@@ -137,6 +137,7 @@ class SfSNet:
         al_out2 = (al_out2*255).astype(dtype=np.uint8)
         Irec = (Irec*255).astype(dtype=np.uint8)
         Ishd = (Ishd*255).astype(dtype=np.uint8)
+        # -------------end---------------------
         return o_im, mask, n_out2, al_out2, Irec, Ishd
 
 
