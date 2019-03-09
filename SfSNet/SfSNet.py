@@ -47,10 +47,11 @@ class SfSNet:
         :param image: the image you want to process
         :return: cropped_face, albedo, normal, shading
         """
-        mask, im = self.mg.align(image, crop_size=(M, M))
+        mask, im = self.mg.align(image, crop_size=(M, M), return_none=True)
         o_im = im.copy()
         if show:
-            cv2.imshow("mask", mask)
+            if mask is not None:
+                cv2.imshow("mask", mask)
             cv2.imshow("image", im)
             cv2.waitKey(50)
 
@@ -112,12 +113,13 @@ class SfSNet:
         # Note: n_out2, al_out2, light_out is the actual output
         Irec, Ishd = create_shading_recon(n_out2, al_out2, light_out)
 
-        diff = (mask / 255)
+        if mask is not None:
+            diff = (mask / 255)
 
-        n_out2 = n_out2 * diff
-        al_out2 = al_out2 * diff
-        Ishd = Ishd * diff
-        Irec = Irec * diff
+            n_out2 = n_out2 * diff
+            al_out2 = al_out2 * diff
+            Ishd = Ishd * diff
+            Irec = Irec * diff
 
         Ishd = np.float32(Ishd)
         Ishd = cv2.cvtColor(Ishd, cv2.COLOR_RGB2GRAY)
@@ -127,17 +129,24 @@ class SfSNet:
 
 if __name__ == '__main__':
     from config import *
+    import glob
     sfsnet = SfSNet(MODEL, WEIGHTS, GPU_ID, '../shape_predictor_68_face_landmarks.dat')
 
-    image = cv2.imread('Images/4.png_face.png')
+    images = glob.glob("Images/*.*")
+    print images
+    for im in images:
+        image = cv2.imread(im)
+        if image is None:
+            sys.stderr.write("Empty image: "+im)
+            continue
 
-    face, shape, albedo, reconstruction, shading = sfsnet.forward(image)
+        face, shape, albedo, reconstruction, shading = sfsnet.forward(image, show=True)
 
-    print face.shape, shape.shape, albedo.shape, reconstruction.shape, shading.shape
-    t1 = np.hstack((face, shape))
-    t2 = np.hstack((albedo, reconstruction))
-    t = np.vstack((t1, t2))
+        # print face.shape, shape.shape, albedo.shape, reconstruction.shape, shading.shape
+        # t1 = np.hstack((face, shape))
+        # t2 = np.hstack((albedo, reconstruction))
+        # t = np.vstack((t1, t2))
 
-    cv2.imshow('result', t)
-    cv2.imshow('shading', shading)
-    cv2.waitKey(0)
+        # cv2.imshow('result', t)
+        cv2.imshow('shading', shading)
+        cv2.waitKey(0)
