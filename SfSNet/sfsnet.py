@@ -57,7 +57,7 @@ class SfSNet:
         :return: o_im: cropped face, BGR format
                  mask: mask image
                  al_out2: albedo, BGR format
-                 n_out2: 3-channel float array
+                 n_out2: 3-channel float array, BGR format
                  IRec: reconstructed image, BGR format
                  IShd: shading image, gray format
         """
@@ -144,6 +144,7 @@ class SfSNet:
         Ishd = (Ishd*255).astype(dtype=np.uint8)
 
         al_out2 = cv2.cvtColor(al_out2, cv2.COLOR_RGB2BGR)
+        n_out2 = cv2.cvtColor(n_out2, cv2.COLOR_RGB2BGR)
         Irec = cv2.cvtColor(Irec, cv2.COLOR_RGB2BGR)
         # -------------end---------------------
         return o_im, mask, n_out2, al_out2, Irec, Ishd
