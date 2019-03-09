@@ -6,7 +6,7 @@ import dlib
 import cv2
 import sys
 import numpy as np
-from functions import create_mask_fiducial
+from SfSNet.functions import create_mask_fiducial
 
 
 class MaskGenerator:
@@ -25,6 +25,13 @@ class MaskGenerator:
         # cv2.waitKey(50)
         return mask & img
 
+    def bounding_boxes(self, image):
+        # convert to gray image
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # get rect contains face
+        face_rects = self._detector(gray_image, 0)
+        return face_rects
+
     def align(self, image, crop_size=(240, 240), scale=3.5, show_landmarks=False, return_none=False):
         """
         :param show_landmarks:
@@ -35,10 +42,8 @@ class MaskGenerator:
         :return: a face image with mask
         https://blog.csdn.net/qq_39438636/article/details/79304130
         """
-        # convert to gray image
-        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        # get rect contains face
-        face_rects = self._detector(gray_image, 0)
+        # get rectangles which contains face
+        face_rects = self.bounding_boxes(image)
         for i in range(len(face_rects)):
             # get 68 landmarks of face
             landmarks = np.array([[p.x, p.y] for p in self._predictor(image, face_rects[i]).parts()])
@@ -132,14 +137,15 @@ class MaskGenerator:
         for i, landmark in enumerate(landmarks):
             cv2.circle(im, tuple(landmark), 3, (0, 0, 255))
             cv2.putText(im, str(i), tuple(landmark), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5, (0, 255, 0))
+                        0.3, (0, 255, 0))
         cv2.imshow("landmarks", im)
         cv2.waitKey(50)
 
 
 if __name__ == '__main__':
-    image = cv2.imread('Images/0003_01.jpg')
-    mask_gen = MaskGenerator()
+    from SfSNet.config import LANDMARK_PATH
+    image = cv2.imread('SfSNet/Images/4.png_face.png')
+    mask_gen = MaskGenerator(LANDMARK_PATH)
     mah= mask_gen.get_masked_face(image)
     cv2.imshow('123', mah)
     cv2.waitKey(0)

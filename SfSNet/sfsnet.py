@@ -13,12 +13,12 @@ from functions import create_shading_recon
 # the two lines add pycaffe support
 sys.path.insert(0, os.path.join(CAFFE_ROOT, 'python'))
 import caffe
-from mask import MaskGenerator
+from SfSNet.mask import MaskGenerator
 
 
 class SfSNet:
     def __init__(self, model, weights, gpu_id=0,
-                 landmark_path='shape_predictor_68_face_landmarks.dat'):
+                 landmark_path='../shape_predictor_68_face_landmarks.dat'):
         """
         init SfSNet
         :param model: model's path
@@ -40,6 +40,15 @@ class SfSNet:
 
         # define a mask generator
         self.mg = MaskGenerator(landmark_path)
+
+    def process_image(self, image, show=False):
+        mask, im = self.mg.align(image, crop_size=(M, M), return_none=True)
+        if show:
+            if mask is not None:
+                cv2.imshow("mask", mask)
+            cv2.imshow("image", im)
+            cv2.waitKey(50)
+        return mask, im
 
     def forward(self, image, show=False):
         """
@@ -121,10 +130,14 @@ class SfSNet:
             Ishd = Ishd * diff
             Irec = Irec * diff
 
+        # -----------add by wang------------
         Ishd = np.float32(Ishd)
         Ishd = cv2.cvtColor(Ishd, cv2.COLOR_RGB2GRAY)
         Ishd = cv2.cvtColor(Ishd, cv2.COLOR_GRAY2RGB)
-        return o_im, n_out2, al_out2, Irec, Ishd
+        al_out2 = (al_out2*255).astype(dtype=np.uint8)
+        Irec = (Irec*255).astype(dtype=np.uint8)
+        Ishd = (Ishd*255).astype(dtype=np.uint8)
+        return o_im, mask, n_out2, al_out2, Irec, Ishd
 
 
 if __name__ == '__main__':
@@ -140,7 +153,7 @@ if __name__ == '__main__':
             sys.stderr.write("Empty image: "+im)
             continue
 
-        face, shape, albedo, reconstruction, shading = sfsnet.forward(image, show=True)
+        face, mask, shape, albedo, reconstruction, shading = sfsnet.forward(image, show=False)
 
         # print face.shape, shape.shape, albedo.shape, reconstruction.shape, shading.shape
         # t1 = np.hstack((face, shape))
@@ -149,4 +162,4 @@ if __name__ == '__main__':
 
         # cv2.imshow('result', t)
         cv2.imshow('shading', shading)
-        cv2.waitKey(0)
+        cv2.waitKey(50)
