@@ -54,7 +54,12 @@ class SfSNet:
         """
         compute albedo, normal, shading, reconstruction of image
         :param image: the image you want to process
-        :return: cropped_face, albedo, normal, shading
+        :return: o_im: cropped face, BGR format
+                 mask: mask image
+                 al_out2: albedo, BGR format
+                 n_out2: 3-channel float array
+                 IRec: reconstructed image, BGR format
+                 IShd: shading image, gray format
         """
         mask, im = self.mg.align(image, crop_size=(M, M), return_none=True)
         o_im = im.copy()
@@ -133,10 +138,13 @@ class SfSNet:
         # -----------add by wang------------
         Ishd = np.float32(Ishd)
         Ishd = cv2.cvtColor(Ishd, cv2.COLOR_RGB2GRAY)
-        Ishd = cv2.cvtColor(Ishd, cv2.COLOR_GRAY2RGB)
+
         al_out2 = (al_out2*255).astype(dtype=np.uint8)
         Irec = (Irec*255).astype(dtype=np.uint8)
         Ishd = (Ishd*255).astype(dtype=np.uint8)
+
+        al_out2 = cv2.cvtColor(al_out2, cv2.COLOR_RGB2BGR)
+        Irec = cv2.cvtColor(Irec, cv2.COLOR_RGB2BGR)
         # -------------end---------------------
         return o_im, mask, n_out2, al_out2, Irec, Ishd
 
