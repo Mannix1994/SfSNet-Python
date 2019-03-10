@@ -63,15 +63,14 @@ def which_direction(image, mask, magnitude_threshold=1.0, show_arrow=False):
     right_up_7 = np.sum(np.int32((angle >= 270) & (angle < 315)))
     right_up_8 = np.sum(np.int32((angle >= 315) & (angle < 360)))
 
-    angle_in_range = [(1, right_down_1),
-                      (2, right_down_2),
-                      (3, left_down_3),
-                      (4, left_down_4),
-                      (5, left_up_5),
-                      (6, left_up_6),
-                      (7, right_up_7),
-                      (8, right_up_8),
-                      ]
+    angle_in_range = [[1, right_down_1],
+                      [2, right_down_2],
+                      [3, left_down_3],
+                      [4, left_down_4],
+                      [5, left_up_5],
+                      [6, left_up_6],
+                      [7, right_up_7],
+                      [8, right_up_8]]
     # angle_in_range = {'right_down_1': right_down_1,
     #                   'right_down_2': right_down_2,
     #                   'left_down_3': left_down_3,
@@ -94,7 +93,7 @@ def _which_direction(angle_in_range):
     _avg_angle_in_range = [(r, l/_max) for r, l in angle_in_range]
     s = sorted(_avg_angle_in_range, key=lambda x: x[1], reverse=True)
 
-    print s
+    print 's=', s
     if (s[0][1]-s[1][1]) > 0.1:
         return s[0][0]
     elif (s[1][1]-s[2][1]) > 0.1:
@@ -106,14 +105,14 @@ def _which_direction(angle_in_range):
             return (s[1][0] + s[0][0]) / 2.0
     elif (s[2][1]-s[3][1]) > 0.1:
         ss = sorted(s[0:3], key=lambda x: x[0])
-        print ss
+        print 'ss=', ss
         _1_0 = ss[1][0] - ss[0][0]
         _2_1 = ss[2][0] - ss[1][0]
         _2_0 = ss[2][0] - ss[0][0]
-        if np.array(ss)[:, 0] == np.array([1, 2, 8]):
+        if (np.array(ss)[:, 0] == np.array([1, 2, 8])).all():
             print '128--------------------128---------'
             return ss[0][0]
-        elif np.array(ss)[:, 0] == np.array([1, 7, 8]):
+        elif (np.array(ss)[:, 0] == np.array([1, 7, 8])).all():
             print '178--------------------178---------'
             return ss[2][0]
         if _1_0 > 1 or _2_1 > 1:

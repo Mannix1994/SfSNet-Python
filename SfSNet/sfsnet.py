@@ -156,8 +156,10 @@ if __name__ == '__main__':
 
     sfsnet = SfSNet(MODEL, WEIGHTS, GPU_ID, '../shape_predictor_68_face_landmarks.dat')
 
-    images = glob.glob("../Images/*.*")
+    images = glob.glob("/home/creator/E/wangmz/Ubuntu/VGGFace2-train/n000217/*.*")
     print images
+    for i in range(1, 9, 1):
+        os.mkdir(os.path.join('../result', str(i)))
     for im in images:
         image = cv2.imread(im)
         if image is None:
@@ -168,15 +170,18 @@ if __name__ == '__main__':
 
         # print face.shape, shape.shape, albedo.shape, reconstruction.shape, shading.shape
 
+        cv2.namedWindow('face', cv2.WINDOW_NORMAL)
+        cv2.namedWindow('shading', cv2.WINDOW_NORMAL)
         cv2.imshow('face', face)
         # cv2.imshow('mask', mask)
         # cv2.imshow('albedo', albedo)
         # cv2.imshow('reconstruction', reconstruction)
         cv2.imshow('shading', shading)
-        cv2.imwrite('../shading.png', shading)
+        # cv2.imwrite('../shading.png', shading)
 
         print '*' * 100
-        direction, result = which_direction(shading, mask, show_arrow=True)
+        direction, result = which_direction(shading, mask, show_arrow=False)
         result = sorted(result, key=lambda x: x[1], reverse=True)
         print direction, result
-        cv2.waitKey(0)
+        cv2.imwrite(os.path.join('../result', str(int(direction)), im.split('/')[-1]), shading)
+        cv2.waitKey(50)
