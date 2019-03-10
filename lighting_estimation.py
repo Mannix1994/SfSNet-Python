@@ -7,7 +7,7 @@ import numpy as np
 def draw_arrow(image, magnitude, angle, magnitude_threshold=1.0, length=10):
     # _image = image.copy()
     _image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-    angle = angle/180.0*np.pi
+    angle = angle / 180.0 * np.pi
     for i in range(0, image.shape[0], 8):
         for j in range(0, image.shape[1], 8):
             magni = magnitude[i, j]
@@ -40,7 +40,7 @@ def which_direction(image, mask, magnitude_threshold=1.0, show_arrow=False):
     magnitude, angle = cv2.cartToPolar(h_conv, v_conv, angleInDegrees=True)
     if mask is not None:
         _mask = mask[:, :, 0]
-        _mask = _mask/255
+        _mask = _mask / 255
         # remove the un-masked area
         magnitude *= _mask
         angle *= _mask
@@ -53,7 +53,7 @@ def which_direction(image, mask, magnitude_threshold=1.0, show_arrow=False):
     # set angle[i,j]=0 if magnitude[i, j] < magnitude_threshold
     angle = angle * np.int32(magnitude > magnitude_threshold)
     # count the angle's direction
-    # please see light_estimation_坐标系.png
+    # please see light_estimation_分区.png
     right_down_1 = np.sum(np.int32((angle > 0) & (angle < 45)))
     right_down_2 = np.sum(np.int32((angle >= 45) & (angle < 90)))
     left_down_3 = np.sum(np.int32((angle >= 90) & (angle < 135)))
@@ -63,24 +63,74 @@ def which_direction(image, mask, magnitude_threshold=1.0, show_arrow=False):
     right_up_7 = np.sum(np.int32((angle >= 270) & (angle < 315)))
     right_up_8 = np.sum(np.int32((angle >= 315) & (angle < 360)))
 
-    return [('1', right_down_1),
-            ('2', right_down_2),
-            ('3', left_down_3),
-            ('4', left_down_4),
-            ('5', left_up_5),
-            ('6', left_up_6),
-            ('7', right_up_7),
-            ('8', right_up_8),
-            ]
-    # return {'right_down_1': right_down_0,
-    #         'right_down_2': right_down_1,
-    #         'left_down_3': left_down_2,
-    #         'left_down_4': left_down_3,
-    #         'left_up_5': left_up_4,
-    #         'left_up_6': left_up_5,
-    #         'right_up_7': right_up_6,
-    #         'right_up_8': right_up_7,
-    #         }
+    angle_in_range = [(1, right_down_1),
+                      (2, right_down_2),
+                      (3, left_down_3),
+                      (4, left_down_4),
+                      (5, left_up_5),
+                      (6, left_up_6),
+                      (7, right_up_7),
+                      (8, right_up_8),
+                      ]
+    # angle_in_range = {'right_down_1': right_down_1,
+    #                   'right_down_2': right_down_2,
+    #                   'left_down_3': left_down_3,
+    #                   'left_down_4': left_down_4,
+    #                   'left_up_5': left_up_5,
+    #                   'left_up_6': left_up_6,
+    #                   'right_up_7': right_up_7,
+    #                   'right_up_8': right_up_8,
+    #                   }
+    direction = _which_direction(angle_in_range)
+
+    return direction, angle_in_range
+
+
+def _which_direction(angle_in_range):
+    # please see light_estimation_方向.png
+    directions = []
+    _max = max(angle_in_range, key=lambda x: x[1])[1]
+    _max = float(_max)
+    _avg_angle_in_range = [(r, l/_max) for r, l in angle_in_range]
+    s = sorted(_avg_angle_in_range, key=lambda x: x[1], reverse=True)
+
+    print s
+    if (s[0][1]-s[1][1]) > 0.1:
+        return s[0][0]
+    elif (s[1][1]-s[2][1]) > 0.1:
+        if (s[1][0] == 8 and s[0][0] == 1) or (s[1][0] == 1 and s[0][0] ==8):
+            return 8
+        elif abs(s[1][0] - s[0][0]) > 2:
+            return -1
+        else:
+            return (s[1][0] + s[0][0]) / 2.0
+    elif (s[2][1]-s[3][1]) > 0.1:
+        ss = sorted(s[0:3], key=lambda x: x[0])
+        print ss
+        _1_0 = ss[1][0] - ss[0][0]
+        _2_1 = ss[2][0] - ss[1][0]
+        _2_0 = ss[2][0] - ss[0][0]
+        if np.array(ss)[:, 0] == np.array([1, 2, 8]):
+            print '128--------------------128---------'
+            return ss[0][0]
+        elif np.array(ss)[:, 0] == np.array([1, 7, 8]):
+            print '178--------------------178---------'
+            return ss[2][0]
+        if _1_0 > 1 or _2_1 > 1:
+            return -1
+        elif _1_0 == 1 and _2_1 == 1:
+            return ss[1][0]
+        elif _1_0 == 1:
+            return ss[0][0]
+        elif _2_1 == 1:
+            return ss[1][0]
+        else:
+            return -1
+    else:
+        return -1
+    # for i in range(len(_avg_angle_in_range) - 1):
+    #     directions.append(_avg_angle_in_range[i][1] + _avg_angle_in_range[i + 1][1])
+    # directions.append(_avg_angle_in_range[-1][1] + _avg_angle_in_range[0][1])
 
 
 if __name__ == '__main__':

@@ -156,7 +156,7 @@ if __name__ == '__main__':
 
     sfsnet = SfSNet(MODEL, WEIGHTS, GPU_ID, '../shape_predictor_68_face_landmarks.dat')
 
-    images = glob.glob("Images/*.*")
+    images = glob.glob("../Images/*.*")
     print images
     for im in images:
         image = cv2.imread(im)
@@ -175,7 +175,8 @@ if __name__ == '__main__':
         cv2.imshow('shading', shading)
         cv2.imwrite('../shading.png', shading)
 
-        result = which_direction(shading, mask, show_arrow=True)
+        print '*' * 100
+        direction, result = which_direction(shading, mask, show_arrow=True)
         result = sorted(result, key=lambda x: x[1], reverse=True)
-        print result
+        print direction, result
         cv2.waitKey(0)
