@@ -1,24 +1,7 @@
 # coding=utf8
 
-from SfSNet.sfsnet import SfSNet
-from SfSNet.config import *
 import cv2
 import numpy as np
-
-if __name__ == '1':
-    sfsnet = SfSNet(MODEL, WEIGHTS, GPU_ID, LANDMARK_PATH)
-
-    image = cv2.imread('SfSNet/Images/0001_01.jpg')
-
-    face, mask, normal, albedo, reconstruction, gray = sfsnet.forward(image)
-
-    # cv2.imshow('face', face)
-    # cv2.imshow('mask', mask)
-    # cv2.imshow('albedo', albedo)
-    # cv2.imshow('reconstruction', reconstruction)
-    cv2.imshow('shading', gray)
-    cv2.imwrite('shading.png', gray)
-    cv2.waitKey(0)
 
 
 def draw_arrow(image, magnitude, angle, magnitude_threshold=1.0, length=10):
@@ -42,39 +25,64 @@ def draw_arrow(image, magnitude, angle, magnitude_threshold=1.0, length=10):
     return _image
 
 
-def which_direction(image, magnitude_threshold=1.0, show_arrow=False):
+def which_direction(image, mask, magnitude_threshold=1.0, show_arrow=False):
     # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     gray = np.float32(image)
     # define horizontal filter kernel
-    h_kernel = (-1, 0, 1)
+    h_kernel = np.array((-1, -1, 0, 1, 1)).reshape(1, 5)
     # define vertical filter kernel
-    v_kernel = (-1, 0, 1)
+    v_kernel = np.array((-1, -1, 0, 1, 1)).reshape(5, 1)
     # filter horizontally
     h_conv = cv2.filter2D(gray, -1, kernel=h_kernel)
     # filter vertical(rotate)
-    v_conv = cv2.filter2D(cv2.rotate(gray, cv2.ROTATE_90_COUNTERCLOCKWISE), -1, kernel=v_kernel)
-    v_conv = cv2.rotate(v_conv, cv2.ROTATE_90_CLOCKWISE)
+    v_conv = cv2.filter2D(gray, -1, kernel=v_kernel)
     # compute magnitude and angle
     magnitude, angle = cv2.cartToPolar(h_conv, v_conv, angleInDegrees=True)
+    if mask is not None:
+        _mask = mask[:, :, 0]
+        _mask = _mask/255
+        # remove the un-masked area
+        magnitude *= _mask
+        angle *= _mask
     # draw some arrow
     if show_arrow:
         im = draw_arrow(image, magnitude, angle, magnitude_threshold)
         cv2.namedWindow('arrow', cv2.WINDOW_NORMAL)
         cv2.imshow('arrow', im)
-        cv2.waitKey(0)
+        cv2.waitKey(50)
     # set angle[i,j]=0 if magnitude[i, j] < magnitude_threshold
     angle = angle * np.int32(magnitude > magnitude_threshold)
     # count the angle's direction
-    right_down = np.sum(np.int32((angle > 0) & (angle < 90)))
-    left_down = np.sum(np.int32((angle > 90) & (angle < 180)))
-    left_up = np.sum(np.int32((angle > 180) & (angle < 270)))
-    right_up = np.sum(np.int32((angle > 270) & (angle < 360)))
-    return {'right_down': right_down,
-            'left_down': left_down,
-            'left_up': left_up,
-            'right_up': right_up}
+    # please see light_estimation_坐标系.png
+    right_down_1 = np.sum(np.int32((angle > 0) & (angle < 45)))
+    right_down_2 = np.sum(np.int32((angle >= 45) & (angle < 90)))
+    left_down_3 = np.sum(np.int32((angle >= 90) & (angle < 135)))
+    left_down_4 = np.sum(np.int32((angle >= 135) & (angle < 180)))
+    left_up_5 = np.sum(np.int32((angle >= 180) & (angle < 225)))
+    left_up_6 = np.sum(np.int32((angle >= 225) & (angle < 270)))
+    right_up_7 = np.sum(np.int32((angle >= 270) & (angle < 315)))
+    right_up_8 = np.sum(np.int32((angle >= 315) & (angle < 360)))
+
+    return [('1', right_down_1),
+            ('2', right_down_2),
+            ('3', left_down_3),
+            ('4', left_down_4),
+            ('5', left_up_5),
+            ('6', left_up_6),
+            ('7', right_up_7),
+            ('8', right_up_8),
+            ]
+    # return {'right_down_1': right_down_0,
+    #         'right_down_2': right_down_1,
+    #         'left_down_3': left_down_2,
+    #         'left_down_4': left_down_3,
+    #         'left_up_5': left_up_4,
+    #         'left_up_6': left_up_5,
+    #         'right_up_7': right_up_6,
+    #         'right_up_8': right_up_7,
+    #         }
 
 
 if __name__ == '__main__':
     image = cv2.imread('shading.png', cv2.IMREAD_GRAYSCALE)
-    print which_direction(image, 1, True)
+    print which_direction(image, None, 1, True)
