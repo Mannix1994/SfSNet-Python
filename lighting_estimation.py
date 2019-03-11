@@ -29,12 +29,17 @@ def which_direction(image, mask, magnitude_threshold=1.0, show_arrow=False):
     # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     gray = np.float32(image)
     # define horizontal filter kernel
-    h_kernel = np.array((-1, -1, 0, 1, 1)).reshape(1, 5)
+    # h_kernel = np.array((-1, -1, 0, 1, 1)).reshape(1, 5)
+    h_kernel = np.array((-1, -1, 0, 1, 1)).reshape(1, -1)
     # define vertical filter kernel
-    v_kernel = np.array((-1, -1, 0, 1, 1)).reshape(5, 1)
+    v_kernel = h_kernel.T.copy()
+    # kennel_x = np.array([[-1, 0, 1],
+    #                      [-1, 0, 1],
+    #                      [-1, 0, 1]])
+    # kennel_y = kennel_x.T.copy()
     # filter horizontally
     h_conv = cv2.filter2D(gray, -1, kernel=h_kernel)
-    # filter vertical(rotate)
+    # filter vertical
     v_conv = cv2.filter2D(gray, -1, kernel=v_kernel)
     # compute magnitude and angle
     magnitude, angle = cv2.cartToPolar(h_conv, v_conv, angleInDegrees=True)
@@ -94,42 +99,51 @@ def _which_direction(angle_in_range):
     s = sorted(_avg_angle_in_range, key=lambda x: x[1], reverse=True)
 
     print 's=', s
-    if (s[0][1]-s[1][1]) > 0.1:
+    # 前四个的占比都超过0.65，那么认为是均匀光照
+    if ((s[0][1]+s[1][1]+s[2][1]+s[3][1])/4) > 0.65:
+        return -1
+    # 如果前两个的占比之差超过0.15，直接选第一个
+    if (s[0][1]-s[1][1]) > 0.15:
         return s[0][0]
+    # 如果第二个和第三个的差大于0.1，则取前两个的平均值
     elif (s[1][1]-s[2][1]) > 0.1:
+        # 序号是1和8，是连续的，直接返回8
         if (s[1][0] == 8 and s[0][0] == 1) or (s[1][0] == 1 and s[0][0] ==8):
             return 8
+        # 序号之差大于2，认为是均匀光照
         elif abs(s[1][0] - s[0][0]) > 2:
             return -1
+        # 否则取平均值
         else:
             return (s[1][0] + s[0][0]) / 2.0
+    # 第三个和第四个的差大于0.1，则认为前三个连续
     elif (s[2][1]-s[3][1]) > 0.1:
+        # 排序
         ss = sorted(s[0:3], key=lambda x: x[0])
         print 'ss=', ss
+        # 计算两两序号之差
         _1_0 = ss[1][0] - ss[0][0]
         _2_1 = ss[2][0] - ss[1][0]
         _2_0 = ss[2][0] - ss[0][0]
+        # 序号是128和178是连续的
         if (np.array(ss)[:, 0] == np.array([1, 2, 8])).all():
             print '128--------------------128---------'
             return ss[0][0]
         elif (np.array(ss)[:, 0] == np.array([1, 7, 8])).all():
             print '178--------------------178---------'
             return ss[2][0]
+        # 序号之差大于1，说明这三个序号不连续，认为是平均光照
         if _1_0 > 1 or _2_1 > 1:
             return -1
+        # 三个序号连续，取中间的序号
         elif _1_0 == 1 and _2_1 == 1:
             return ss[1][0]
-        elif _1_0 == 1:
-            return ss[0][0]
-        elif _2_1 == 1:
-            return ss[1][0]
+        # 没啥用
         else:
             return -1
+    # 有四个连续，则直接判断为均匀光照
     else:
         return -1
-    # for i in range(len(_avg_angle_in_range) - 1):
-    #     directions.append(_avg_angle_in_range[i][1] + _avg_angle_in_range[i + 1][1])
-    # directions.append(_avg_angle_in_range[-1][1] + _avg_angle_in_range[0][1])
 
 
 if __name__ == '__main__':
