@@ -6,7 +6,7 @@ import os
 import shutil
 import cv2
 
-from config import CAFFE_ROOT
+from config import CAFFE_ROOT, M
 from functions import create_shading_recon
 
 # the two lines add pycaffe support
