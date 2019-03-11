@@ -95,20 +95,36 @@ def _which_direction(angle_in_range):
     directions = []
     _max = max(angle_in_range, key=lambda x: x[1])[1]
     _max = float(_max)
-    _avg_angle_in_range = [(r, l/_max) for r, l in angle_in_range]
+    _avg_angle_in_range = [(r, l / _max) for r, l in angle_in_range]
     s = sorted(_avg_angle_in_range, key=lambda x: x[1], reverse=True)
 
     print 's=', s
     # 前四个的占比都超过0.65，那么认为是均匀光照
-    if ((s[0][1]+s[1][1]+s[2][1]+s[3][1])/4) > 0.65:
-        return -1
-    # 如果前两个的占比之差超过0.15，直接选第一个
-    if (s[0][1]-s[1][1]) > 0.15:
+    if s[3][1] > 0.65:
+        # 排序
+        ss = sorted(s[0:4], key=lambda x: x[0])
+        print 'ss=', ss
+        zheyelianxu = [[1, 6, 7, 8], [1, 2, 7, 8], [1, 2, 3, 8]]
+        xuhao = [sss[0] for sss in ss]
+        if xuhao in zheyelianxu:
+            if xuhao == [1, 6, 7, 8]:
+                return 7
+            elif xuhao == [1, 2, 7, 8]:
+                return 8
+            else:
+                return 1
+        else:
+            if xuhao[3] - xuhao[0] == 3:
+                return (xuhao[1]+xuhao[2])/2.0
+            else:
+                return -1
+    # 如果前两个的占比之差超过0.16，直接选第一个
+    if (s[0][1] - s[1][1]) > 0.16:
         return s[0][0]
     # 如果第二个和第三个的差大于0.1，则取前两个的平均值
-    elif (s[1][1]-s[2][1]) > 0.1:
+    elif (s[1][1] - s[2][1]) > 0.1:
         # 序号是1和8，是连续的，直接返回8
-        if (s[1][0] == 8 and s[0][0] == 1) or (s[1][0] == 1 and s[0][0] ==8):
+        if (s[1][0] == 8 and s[0][0] == 1) or (s[1][0] == 1 and s[0][0] == 8):
             return 8
         # 序号之差大于2，认为是均匀光照
         elif abs(s[1][0] - s[0][0]) > 2:
@@ -117,7 +133,7 @@ def _which_direction(angle_in_range):
         else:
             return (s[1][0] + s[0][0]) / 2.0
     # 第三个和第四个的差大于0.1，则认为前三个连续
-    elif (s[2][1]-s[3][1]) > 0.1:
+    elif (s[2][1] - s[3][1]) > 0.1:
         # 排序
         ss = sorted(s[0:3], key=lambda x: x[0])
         print 'ss=', ss

@@ -156,7 +156,7 @@ if __name__ == '__main__':
 
     sfsnet = SfSNet(MODEL, WEIGHTS, GPU_ID, '../shape_predictor_68_face_landmarks.dat')
 
-    images = glob.glob("/home/creator/E/wangmz/Ubuntu/VGGFace2-train/n000217/*.*")
+    images = glob.glob("/home/creator/E/wangmz/Ubuntu/VGGFace2-train/n000219/*.*")
     print images
     for i in range(-1, 9, 1):
         shutil.rmtree(os.path.join('../result', str(i)), ignore_errors=True)
@@ -181,7 +181,7 @@ if __name__ == '__main__':
             cv2.namedWindow('shading', cv2.WINDOW_NORMAL)
             cv2.imshow('face', face)
             cv2.imshow('shading', shading)
-            key = cv2.waitKey(0)
+            key = cv2.waitKey(1)
             if key == 27:
                 print 'Exiting...'
                 exit()
