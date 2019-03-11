@@ -5,13 +5,13 @@ import os
 CAFFE_ROOT = "/home/creator/Apps/caffe"
 
 # Project directory
-MODULE_DIR = os.path.dirname(os.path.realpath(__file__))
+PROJECT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 # model's path
-MODEL = os.path.join(MODULE_DIR, 'model/SfSNet_deploy.prototxt')
+MODEL = os.path.join(PROJECT_DIR, 'SfSNet/model/SfSNet_deploy.prototxt')
 
 # weights's path
-WEIGHTS = os.path.join(MODULE_DIR, 'weights/SfSNet.caffemodel.h5')
+WEIGHTS = os.path.join(PROJECT_DIR, 'SfSNet/weights/SfSNet.caffemodel.h5')
 
 # gpu's id
 GPU_ID = 0
@@ -20,9 +20,9 @@ GPU_ID = 0
 M = 128  # size of input for SfSNet
 
 # landmarks's path
-LANDMARK_PATH = 'shape_predictor_68_face_landmarks.dat'
+LANDMARK_PATH = os.path.join(PROJECT_DIR, 'shape_predictor_68_face_landmarks.dat')
 
 if __name__ == '__main__':
-    print MODULE_DIR
+    print PROJECT_DIR
     print MODEL
     print WEIGHTS

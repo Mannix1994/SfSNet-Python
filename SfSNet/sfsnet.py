@@ -6,7 +6,7 @@ import os
 import shutil
 import cv2
 
-from config import CAFFE_ROOT, M
+from config import CAFFE_ROOT
 from functions import create_shading_recon
 
 # the two lines add pycaffe support
@@ -17,7 +17,7 @@ from SfSNet.mask import MaskGenerator
 
 class SfSNet:
     def __init__(self, model, weights, gpu_id=0,
-                 landmark_path='../shape_predictor_68_face_landmarks.dat'):
+                 landmark_path='shape_predictor_68_face_landmarks.dat'):
         """
         init SfSNet
         :param model: model's path
@@ -152,15 +152,11 @@ class SfSNet:
 if __name__ == '__main__':
     from config import *
     import glob
-    from lighting_estimation import which_direction
 
-    sfsnet = SfSNet(MODEL, WEIGHTS, GPU_ID, '../shape_predictor_68_face_landmarks.dat')
+    sfsnet = SfSNet(MODEL, WEIGHTS, GPU_ID, LANDMARK_PATH)
 
-    images = glob.glob("/home/creator/E/wangmz/Ubuntu/VGGFace2-train/n000219/*.*")
+    images = glob.glob(os.path.join(PROJECT_DIR, 'SfSNet/Images/*.*'))
     print images
-    for i in range(-1, 9, 1):
-        shutil.rmtree(os.path.join('../result', str(i)), ignore_errors=True)
-        os.mkdir(os.path.join('../result', str(i)))
     for im in images:
         image = cv2.imread(im)
         if image is None:
@@ -171,12 +167,7 @@ if __name__ == '__main__':
 
         # print face.shape, shape.shape, albedo.shape, reconstruction.shape, shading.shape
         if mask is not None:
-            print '*' * 120
-            direction, result = which_direction(shading, mask, show_arrow=False)
-            result = sorted(result, key=lambda x: x[1], reverse=True)
-            print direction, result
-            cv2.imwrite(os.path.join('../result', str(int(direction)), im.split('/')[-1]), shading)
-
+            print im
             cv2.namedWindow('face', cv2.WINDOW_NORMAL)
             cv2.namedWindow('shading', cv2.WINDOW_NORMAL)
             cv2.imshow('face', face)
@@ -185,3 +176,4 @@ if __name__ == '__main__':
             if key == 27:
                 print 'Exiting...'
                 exit()
+    # print np.max(gray_val), np.min(gray_val)

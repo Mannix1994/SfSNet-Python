@@ -2,10 +2,10 @@
 
 import numpy as np
 import sys
-import os
 import shutil
 import cv2
 from matplotlib import pyplot as plt
+import glob
 
 from config import *
 from functions import create_shading_recon
@@ -30,13 +30,15 @@ def _test():
     dat_idx = 0
     if dat_idx:
         # Images and masks are provided
-        list_im = sorted(os.listdir(os.path.join(MODULE_DIR, 'Images_mask')))
-        list_im = [im for im in list_im if im.endswith('_face.png')]
+        # list_im = sorted(os.listdir(os.path.join(PROJECT_DIR, 'SfSNet/Images_mask')))
+        # list_im = [im for im in list_im if im.endswith('_face.png')]
+        list_im = sorted(glob.glob(os.path.join(PROJECT_DIR, 'SfSNet/Images_mask/*_face.png')))
         dat_idx = 1
     elif dat_idx == 0:
         # No mask provided (Need to use your own mask).
-        list_im = sorted(os.listdir(os.path.join(MODULE_DIR, 'Images/')))
-        list_im = [im for im in list_im if im.endswith('.png') or im.endswith('.jpg')]
+        # list_im = sorted(os.listdir(os.path.join(PROJECT_DIR, 'SfSNet/Images')))
+        # list_im = [im for im in list_im if im.endswith('.png') or im.endswith('.jpg')]
+        list_im = sorted(glob.glob(os.path.join(PROJECT_DIR, 'SfSNet/Images/*.*')))
         dat_idx = 0  # Uncomment to test with this mode
     else:
         sys.stderr.write('Wrong Option!')
@@ -46,7 +48,7 @@ def _test():
     print list_im, dat_idx
 
     # define a mask generator
-    mg = MaskGenerator('../'+LANDMARK_PATH)
+    mg = MaskGenerator(LANDMARK_PATH)
 
     l_image = []
     l_normal = []
@@ -59,18 +61,18 @@ def _test():
         # read image
         if dat_idx == 1:
             # read face image as BGR format
-            o_im = cv2.imread(os.path.join(MODULE_DIR, 'Images_mask', im_name))
+            o_im = cv2.imread(im_name)
             im = o_im.copy()
             # resize image
             im = cv2.resize(im, (M, M))
             # get mask image's name
             mask_name = im_name.replace('face', 'mask')
             # read mask image as BGR format
-            Mask = cv2.imread(os.path.join(MODULE_DIR, 'Images_mask', mask_name))
+            Mask = cv2.imread(mask_name)
             Mask = np.float32(Mask) / 255.0
             mask = cv2.resize(Mask, (M, M))
         else:
-            o_im = cv2.imread(os.path.join(MODULE_DIR, 'Images', im_name))
+            o_im = cv2.imread(im_name)
             im = o_im.copy()
             mask, im = mg.align(im, crop_size=(M, M))
             cv2.imshow("mask", mask)
@@ -156,11 +158,11 @@ def _test():
         l_shading.append(Ishd)
 
     # 保存结果
-    save(l_image, MODULE_DIR, 'result', 'origin')
-    save(l_albedo, MODULE_DIR, 'result', 'albedo')
-    save(l_albedo, MODULE_DIR, 'result', 'albedo')
-    save(l_recon, MODULE_DIR, 'result', 'recon')
-    save(l_shading, MODULE_DIR, 'result', 'shading')
+    save(l_image, PROJECT_DIR, 'result', 'origin')
+    save(l_albedo, PROJECT_DIR, 'result', 'albedo')
+    save(l_albedo, PROJECT_DIR, 'result', 'albedo')
+    save(l_recon, PROJECT_DIR, 'result', 'recon')
+    save(l_shading, PROJECT_DIR, 'result', 'shading')
 
 
 def save(im_list, PROJECT_DIR, sub_dir, imname):
@@ -182,7 +184,7 @@ def save(im_list, PROJECT_DIR, sub_dir, imname):
 
 
 if __name__ == '__main__':
-    result_dir = os.path.join(MODULE_DIR, 'result')
+    result_dir = os.path.join(PROJECT_DIR, 'result')
     if os.path.exists(result_dir):
         shutil.rmtree(result_dir)
     os.mkdir(result_dir)

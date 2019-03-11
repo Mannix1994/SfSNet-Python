@@ -90,20 +90,33 @@ def which_direction(image, mask, magnitude_threshold=1.0, show_arrow=False):
     return direction, angle_in_range
 
 
+def gray_level(shading, mask):
+    if mask.ndim == 3:
+        mask = mask[:, :, 0]/255
+    pixel_count = np.sum(mask)
+
+    shading_count = np.sum(shading)
+
+    avg_pixel_val = shading_count / pixel_count
+    print 'avg_pixel_val = ', avg_pixel_val
+    return avg_pixel_val
+
+
 def _which_direction(angle_in_range):
     # please see light_estimation_方向.png
     directions = []
     _max = max(angle_in_range, key=lambda x: x[1])[1]
     _max = float(_max)
-    _avg_angle_in_range = [(r, l / _max) for r, l in angle_in_range]
+    _avg_angle_in_range = [(r, round(l / _max, 2)) for r, l in angle_in_range]
     s = sorted(_avg_angle_in_range, key=lambda x: x[1], reverse=True)
 
     print 's=', s
-    # 前四个的占比都超过0.65，那么认为是均匀光照
+    # 前四个的占比都超过0.65
     if s[3][1] > 0.65:
         # 排序
         ss = sorted(s[0:4], key=lambda x: x[0])
         print 'ss=', ss
+        # 连续的三种特殊情况
         zheyelianxu = [[1, 6, 7, 8], [1, 2, 7, 8], [1, 2, 3, 8]]
         xuhao = [sss[0] for sss in ss]
         if xuhao in zheyelianxu:
@@ -114,9 +127,11 @@ def _which_direction(angle_in_range):
             else:
                 return 1
         else:
+            # 连续，返回中间的值
             if xuhao[3] - xuhao[0] == 3:
                 return (xuhao[1]+xuhao[2])/2.0
             else:
+                # 如果不连续，那么认为是均匀光照
                 return -1
     # 如果前两个的占比之差超过0.16，直接选第一个
     if (s[0][1] - s[1][1]) > 0.16:

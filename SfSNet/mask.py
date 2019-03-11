@@ -7,10 +7,11 @@ import cv2
 import sys
 import numpy as np
 from SfSNet.functions import create_mask_fiducial
+from config import LANDMARK_PATH
 
 
 class MaskGenerator:
-    def __init__(self, landmarks_path='shape_predictor_68_face_landmarks.dat'):
+    def __init__(self, landmarks_path=LANDMARK_PATH):
         """
         :param landmarks_path: the path of pretrained key points weight,
         it could be download from:
@@ -143,8 +144,8 @@ class MaskGenerator:
 
 
 if __name__ == '__main__':
-    from SfSNet.config import LANDMARK_PATH
-    image = cv2.imread('SfSNet/Images/4.png_face.png')
+    from config import LANDMARK_PATH
+    image = cv2.imread('Images/4.png_face.png')
     mask_gen = MaskGenerator(LANDMARK_PATH)
     mah= mask_gen.get_masked_face(image)
     cv2.imshow('123', mah)
