@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import time
 
+
 def draw_arrow(image, magnitude, angle, magnitude_threshold=1.0, length=10):
     # _image = image.copy()
     _image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)

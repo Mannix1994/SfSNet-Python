@@ -29,12 +29,12 @@ def vggface():
             sys.stderr.write("Empty image: " + im)
             continue
 
-        face, mask, shape, albedo, reconstruction, shading = sfsnet.forward(image, show=False)
+        face, mask, shape, albedo, reconstruction, shading = sfsnet.forward(image, show=True)
 
         # print face.shape, shape.shape, albedo.shape, reconstruction.shape, shading.shape
         if mask is not None:
             print '*' * 120
-            direction, result = which_direction(shading, mask, show_arrow=False)
+            direction, result = which_direction(shading, mask, magnitude_threshold=3.0, show_arrow=False)
             result = sorted(result, key=lambda x: x[1], reverse=True)
             print direction, result
 
@@ -44,7 +44,7 @@ def vggface():
 
             cv2.imshow('face', face)
             cv2.imshow('shading', shading)
-            key = cv2.waitKey(1)
+            key = cv2.waitKey(0)
             if key == 27:
                 print 'Exiting...'
                 exit()
@@ -150,4 +150,4 @@ def crop_face_from_image(record, scale=0.8, show=False):
 
 
 if __name__ == '__main__':
-    ijb_a(True)
+    vggface()
