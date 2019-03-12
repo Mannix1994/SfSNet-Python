@@ -29,16 +29,12 @@ def draw_arrow(image, magnitude, angle, magnitude_threshold=1.0, length=10):
 
 def which_direction(image, mask, magnitude_threshold=1.0, show_arrow=False):
     # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # 转换为浮点类型
     gray = np.float32(image)
     # define horizontal filter kernel
-    # h_kernel = np.array((-1, -1, 0, 1, 1)).reshape(1, 5)
     h_kernel = np.array((-1, -1, 0, 1, 1)).reshape(1, -1)
     # define vertical filter kernel
     v_kernel = h_kernel.T.copy()
-    # kennel_x = np.array([[-1, 0, 1],
-    #                      [-1, 0, 1],
-    #                      [-1, 0, 1]])
-    # kennel_y = kennel_x.T.copy()
     # filter horizontally
     h_conv = cv2.filter2D(gray, -1, kernel=h_kernel)
     # filter vertical
@@ -78,15 +74,7 @@ def which_direction(image, mask, magnitude_threshold=1.0, show_arrow=False):
                       [6, left_up_6],
                       [7, right_up_7],
                       [8, right_up_8]]
-    # angle_in_range = {'right_down_1': right_down_1,
-    #                   'right_down_2': right_down_2,
-    #                   'left_down_3': left_down_3,
-    #                   'left_down_4': left_down_4,
-    #                   'left_up_5': left_up_5,
-    #                   'left_up_6': left_up_6,
-    #                   'right_up_7': right_up_7,
-    #                   'right_up_8': right_up_8,
-    #                   }
+    # 判断属于那个方向
     direction = _which_direction(angle_in_range)
 
     return direction, angle_in_range
@@ -99,16 +87,18 @@ def gray_level(shading, mask):
     :param mask:
     :return:
     """
+    # 计算像素总数
     if mask is not None:
         if mask.ndim == 3:
             mask = mask[:, :, 0]/255
         pixel_count = np.sum(mask)
     else:
         pixel_count = shading.size
-
+    # 计算shading的像素总值
     shading_count = np.sum(shading)
-
+    # 计算每个像素的平均值
     avg_pixel_val = shading_count / pixel_count
+    # 判断等级
     level = 0
     if avg_pixel_val < 70:
         level = 0
@@ -126,11 +116,17 @@ def gray_level(shading, mask):
 
 
 def _which_direction(angle_in_range):
-    # please see doc/light_estimation_方向.png
-    directions = []
+    """
+    please see doc/light_estimation_方向.png
+    这个函数判断逻辑，emmm，有点复杂，很多阈值都是经验值，判断规则也是经验。
+    所以用这个函数的时候需要根据自己的数据集调整阈值。
+    """
+    # 找到最大值
     _max = max(angle_in_range, key=lambda x: x[1])[1]
     _max = float(_max)
+    # 每个角度范围的值都除以最大值
     _avg_angle_in_range = [(r, round(l / _max, 2)) for r, l in angle_in_range]
+    # 排序
     s = sorted(_avg_angle_in_range, key=lambda x: x[1], reverse=True)
 
     print 's=', s
@@ -202,25 +198,37 @@ def _which_direction(angle_in_range):
 
 class Statistic:
     def __init__(self, csv_name, *keys):
+        # CSV文件名字
         self._csv_name = csv_name
+        # CSV的标题行
         self._keys = list(keys)
+        # 记录（一行是一条记录）
         self._records = {}
+        # 是否保存的标志位
         self._have_change = False
 
     def add(self, face_id, key):
+        # 设置标志
         self._have_change = True
+        # 还没有face_id指定的人
         if face_id not in self._records.keys():
+            # 创建用于统计该人信息的字典
             self._records[face_id] = {}
+            # 创建该人的所有key
             for k in self._keys:
                 self._records[face_id][k] = 0
+        # 找到对应的人的对应key，使其值加一
         self._records[face_id][key] += 1
 
     def save(self):
+        # 保存记录
         with open(self._csv_name, 'w') as f:
             writer = csv.writer(f)
+            # 写入标题行
             writer.writerow(['id', ] + self._keys)
+            # 写入记录
             for fid, key_val in self._records.items():
-                print fid, key_val
+                # print (fid, key_val)
                 writer.writerow([fid, ]+[key_val[k] for k in self._keys])
 
         self._have_change = False
@@ -243,9 +251,9 @@ if __name__ == '__main__':
     s.add(2, 'right')
     s.add(3, 'direct')
     s.add(2, 'direct')
-    # s.save()
+    s.save()
 
 
-# if __name__ == '__main__':
-#     image = cv2.imread('shading.png', cv2.IMREAD_GRAYSCALE)
-#     print which_direction(image, None, 1, True)
+if __name__ == '__main__':
+    image = cv2.imread('SfSNet/shading.png', cv2.IMREAD_GRAYSCALE)
+    print which_direction(image, None, 1, True)

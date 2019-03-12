@@ -53,11 +53,14 @@ def vggface():
 
 
 def ijb_a(show=False):
+    # 默认存储目录
     base_dir = os.path.join(PROJECT_DIR, 'result')
-
+    # SfSNet实例，自己把sfenet包装了一遍
     sfsnet = SfSNet(MODEL, WEIGHTS, GPU_ID, LANDMARK_PATH)
 
+    # 列表文件
     list_file = os.path.join(IJB_A_11, 'split1', 'train_1.csv')
+    # 包括人物id，文件名，以及人脸正方形(左上角定点，人脸的的宽和高)
     people_records = []
 
     if show:
@@ -66,40 +69,56 @@ def ijb_a(show=False):
     gray_val = []
     # shabi
 
+    # 统计光照方向
     direction_keys = ['left', 'right', 'direct']
-    level_keys = [0, 1, 2, 3, 4, 5]
     direction_sta = Statistic('direction.csv', *direction_keys)
+    # 统计shading的分布
+    level_keys = [0, 1, 2, 3, 4, 5]
     level_sta = Statistic('level.csv', *level_keys)
+    # 统计方向与光照的组合
     dir_level_keys = ['%s_%d' % (_d, _l) for _d in direction_keys for _l in level_keys]
     dir_level_sta = Statistic('dir_level.csv', *dir_level_keys)
 
     with open(list_file, mode='r') as f:
+        # 跳过IJB-A列表文件的标题行
         next(f)
+        # 定义CSV读取器
         reader = csv.reader(f)
+        # 读取所有的人，并把需要的信息提取出来
         for line in reader:
             people_records.append([line[1], line[2],
                                    (int(float(line[6])), int(float(line[7])),
                                     int(float(line[8])), int(float(line[9])))])
-        for record in people_records[0:10]:
+        for record in people_records:
             print '*' * 120
-            print record
+            print record  # ['417', 'frame/28819_00060.png', (116, 16, 116, 138)]
+            # 从record里读取人脸
             image, rect = crop_face_from_image(record, show=False)
+            # 对齐和裁剪人脸
             mask, aligned_image = sfsnet.process_image(image, show=False)
             if mask is not None:
+                # 对齐成功，mask不为空
                 face, mask, _, _, _, shading = sfsnet.forward(aligned_image, mask)
             else:
+                # 对齐失败
                 shape = image.shape[0:2]
+                # 调整大小
                 resize_image = cv2.resize(image, (M, M))
+                # 使用未对齐的人脸计算shading
                 face, mask, _, _, _, shading = sfsnet.forward(resize_image, None)
+                # 调整回原来的大小
                 shading = cv2.resize(shading, shape)
+                # 裁剪出人脸
                 shading = shading[rect[0][1]:rect[1][1], rect[0][0]:rect[1][0]]
-
+                print('shading.shape', shading.shape)
+            # 计算人脸方向和统计梯度的角度
             direction, angle_count = which_direction(shading, mask, magnitude_threshold=10)
             angle_count = sorted(angle_count, key=lambda x: x[1], reverse=True)
-            print direction, angle_count
+            print(direction, angle_count)
 
+            # 计算shading属于那个亮度等级level
             avg_pixel_val, level = gray_level(shading, mask)
-            print 'avg_pixel_val =', avg_pixel_val, 'level =', level
+            print('avg_pixel_val =', avg_pixel_val, 'level =', level)
             gray_val.append(avg_pixel_val)
 
             # 写入统计数据
@@ -107,19 +126,24 @@ def ijb_a(show=False):
             level_sta.add(record[0], level)
             dir_level_sta.add(record[0], '%s_%d' % (conclude_direction(direction), level))
 
-            id_dir = os.path.join(base_dir, record[0], conclude_direction(direction))
+            # 默认存储路径
+            id_dir = os.path.join(base_dir, record[0], str(level))
+            # 不存在则新建图像
             if not os.path.exists(id_dir):
                 os.makedirs(id_dir)
+            # 存储图像
             cv2.imwrite(os.path.join(id_dir, record[1].split('/')[-1]), face)
             if show:
                 cv2.imshow('face', face)
                 cv2.imshow('shading', shading)
-                if cv2.waitKey(1) == 27:
+                if cv2.waitKey(50) == 27:
                     print 'Exiting...'
                     exit()
         print np.max(gray_val), np.min(gray_val)
+        # 保存统计信息
         direction_sta.save()
         level_sta.save()
+        dir_level_sta.save()
 
 
 def conclude_direction(direction):
@@ -132,4 +156,4 @@ def conclude_direction(direction):
 
 
 if __name__ == '__main__':
-    ijb_a(True)
+    ijb_a(False)
