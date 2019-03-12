@@ -90,8 +90,9 @@ class MaskGenerator:
         rot_mat = cv2.getRotationMatrix2D(tuple(landmarks[2]), r_angle, scale=1)
 
         # rotate image and mask
-        rotated_image = cv2.warpAffine(image, rot_mat, dsize=image.shape[0:2])
-        rotated_mask = cv2.warpAffine(mask, rot_mat, dsize=image.shape[0:2])
+        ims = image.shape[0:2]
+        rotated_image = cv2.warpAffine(image, rot_mat, dsize=(ims[0]*2, ims[1]*2))
+        rotated_mask = cv2.warpAffine(mask, rot_mat, dsize=(ims[0]*2, ims[1]*2))
 
         # crop image and mask
         cropped_image = self._crop_image(rotated_image, landmarks, scale)
@@ -110,26 +111,34 @@ class MaskGenerator:
         size = distance * scale
         # compute row_start, row_end, col_start, col_end
         landmark_nose = landmarks[30]
-        row_start = int(landmark_nose[1]-size/2)
-        row_end = int(landmark_nose[1]+size/2)
-        col_start = int(landmark_nose[0]-size/2)
-        col_end = int(landmark_nose[0]+size/2)
+        row_start = int(landmark_nose[1]-size/2.0)
+        row_end = int(landmark_nose[1]+size/2.0)
+        col_start = int(landmark_nose[0]-size/2.0)
+        col_end = int(landmark_nose[0]+size/2.0)
+        # print('*' * 10)
+        # print(row_start, row_end, col_start, col_end)
         # make range valid
-        row_start = row_start if row_start > 0 else 0
-        row_end = row_end if row_end < image.shape[0] else image.shape[0]
-        col_start = col_start if col_start > 0 else 0
-        col_end = col_end if col_end < image.shape[1] else image.shape[1]
+        if row_start < 0:
+            row_end += abs(row_start)
+            row_start = 0
+        if col_start < 0:
+            col_end += abs(col_start)
+            col_start = 0
+        row_end = min(row_end, image.shape[0])
+        col_end = min(col_end, image.shape[1])
+        # print(row_start, row_end, col_start, col_end)
+        # print('*' * 10)
         # crop image
         cropped_image = image[row_start:row_end, col_start:col_end]
         rows, cols, _ = cropped_image.shape
         _min = np.min((rows, cols))
         if _min < cols:
             # rows is smaller than cols
-            padding = np.zeros(shape=(cols-_min, cols, 3), dtype=np.uint8)
+            padding = np.zeros(shape=(cols-_min, cols, 3), dtype=cropped_image.dtype)
             cropped_image = np.vstack((cropped_image, padding))
         elif _min < rows:
             # cols is smaller than rows
-            padding = np.zeros(shape=(rows, rows - _min, 3), dtype=np.uint8)
+            padding = np.zeros(shape=(rows, rows - _min, 3), dtype=cropped_image.dtype)
             cropped_image = np.hstack((cropped_image, padding))
         return cropped_image
 
