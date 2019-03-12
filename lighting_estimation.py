@@ -2,7 +2,7 @@
 
 import cv2
 import numpy as np
-
+import time
 
 def draw_arrow(image, magnitude, angle, magnitude_threshold=1.0, length=10):
     # _image = image.copy()
@@ -91,6 +91,14 @@ def which_direction(image, mask, magnitude_threshold=1.0, show_arrow=False):
 
 
 def gray_level(shading, mask):
+    """
+    按照shading的像素平均值，把图像亮度分成七个等级。
+    分别为：70以下\70-100\100-130\130-160\160-190\
+    190-210\210-255
+    :param shading:
+    :param mask:
+    :return:
+    """
     if mask.ndim == 3:
         mask = mask[:, :, 0]/255
     pixel_count = np.sum(mask)
@@ -99,7 +107,22 @@ def gray_level(shading, mask):
 
     avg_pixel_val = shading_count / pixel_count
     print 'avg_pixel_val = ', avg_pixel_val
-    return avg_pixel_val
+    level = 0
+    if avg_pixel_val < 70:
+        level = 0
+    elif avg_pixel_val < 100:
+        level = 1
+    elif avg_pixel_val < 130:
+        level = 2
+    elif avg_pixel_val < 160:
+        level = 4
+    elif avg_pixel_val < 190:
+        level = 5
+    elif avg_pixel_val < 210:
+        level = 6
+    else:
+        level = 7
+    return avg_pixel_val, level
 
 
 def _which_direction(angle_in_range):

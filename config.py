@@ -22,6 +22,11 @@ M = 128  # size of input for SfSNet
 # landmarks's path
 LANDMARK_PATH = os.path.join(PROJECT_DIR, 'shape_predictor_68_face_landmarks.dat')
 
+# IJB-A
+IJB_A_ROOT = '/home/creator/E/wangmz/Ubuntu/IJB/IJB-A'
+IJB_A_11 = os.path.join(IJB_A_ROOT, 'IJB-A_11_sets')
+IJB_A_IMAGE_ROOT = os.path.join(IJB_A_ROOT, 'images')
+
 if __name__ == '__main__':
     print PROJECT_DIR
     print MODEL
