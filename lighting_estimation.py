@@ -100,9 +100,12 @@ def gray_level(shading, mask):
     :param mask:
     :return:
     """
-    if mask.ndim == 3:
-        mask = mask[:, :, 0]/255
-    pixel_count = np.sum(mask)
+    if mask is not None:
+        if mask.ndim == 3:
+            mask = mask[:, :, 0]/255
+        pixel_count = np.sum(mask)
+    else:
+        pixel_count = shading.size
 
     shading_count = np.sum(shading)
 

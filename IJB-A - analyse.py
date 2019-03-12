@@ -29,7 +29,7 @@ def vggface():
             sys.stderr.write("Empty image: " + im)
             continue
 
-        face, mask, shape, albedo, reconstruction, shading = sfsnet.forward(image, show=True)
+        face, mask, shape, albedo, reconstruction, shading = sfsnet.forward_with_align(image, show=False)
 
         # print face.shape, shape.shape, albedo.shape, reconstruction.shape, shading.shape
         if mask is not None:
@@ -58,8 +58,9 @@ def ijb_a(show=False):
     list_file = os.path.join(IJB_A_11, 'split1', 'train_1.csv')
     people_records = []
 
-    cv2.namedWindow('face', cv2.WINDOW_NORMAL)
-    cv2.namedWindow('shading', cv2.WINDOW_NORMAL)
+    if show:
+        cv2.namedWindow('face', cv2.WINDOW_NORMAL)
+        cv2.namedWindow('shading', cv2.WINDOW_NORMAL)
     gray_val = []
     with open(list_file, mode='r') as f:
         next(f)
@@ -69,30 +70,39 @@ def ijb_a(show=False):
                                    (int(float(line[6])), int(float(line[7])),
                                     int(float(line[8])), int(float(line[9])))])
         for record in people_records:
+            print '*' * 120
             print record
-            image = crop_face_from_image(record, show=False)
+            image, rect = crop_face_from_image(record, show=False)
             if show:
                 cv2.imshow('crop_face', image)
                 if cv2.waitKey(1) == 27:
                     exit()
-            face, mask, shape, albedo, reconstruction, shading = sfsnet.forward(image, show=False)
-
+            mask, aligned_image = sfsnet.process_image(image, show)
             if mask is not None:
-                print '*' * 120
-                direction, result = which_direction(shading, mask, show_arrow=False)
-                result = sorted(result, key=lambda x: x[1], reverse=True)
-                print direction, result
+                face, mask, _, _, _, shading = sfsnet.forward(aligned_image, mask)
+            else:
+                shape = image.shape[0:2]
+                resize_image = cv2.resize(image, (M, M))
+                face, mask, _, _, _, shading = sfsnet.forward(resize_image, None)
+                shading = cv2.resize(shading, shape)
+                shading = shading[rect[0][1]:rect[1][1], rect[0][0]:rect[1][0]]
+                cv2.imshow('shading', shading)
+                cv2.waitKey(50)
 
-                gray_val.append(gray_level(shading, mask)[0])
+            direction, result = which_direction(shading, mask, show_arrow=False)
+            result = sorted(result, key=lambda x: x[1], reverse=True)
+            print direction, result
 
-                # cv2.imwrite(os.path.join('result', str(int(direction)), im.split('/')[-1]), shading)
+            gray_val.append(gray_level(shading, mask)[0])
 
-                if show:
-                    cv2.imshow('face', face)
-                    cv2.imshow('shading', shading)
-                    if cv2.waitKey(0) == 27:
-                        print 'Exiting...'
-                        exit()
+            # cv2.imwrite(os.path.join('result', str(int(direction)), im.split('/')[-1]), shading)
+
+            if show:
+                cv2.imshow('face', face)
+                cv2.imshow('shading', shading)
+                if cv2.waitKey(0) == 27:
+                    print 'Exiting...'
+                    exit()
         print np.max(gray_val), np.min(gray_val)
 
 
@@ -141,13 +151,20 @@ def crop_face_from_image(record, scale=0.8, show=False):
 
     # 截取人脸
     cropped_image = image[left_top_y:right_down_y, left_top_x:right_down_x]
-    if cropped_image.shape[0] > 500:
-        # 等比例缩小
-        ratio = cropped_image.shape[0] / 500.0
-        cropped_image = cv2.resize(cropped_image, (int(cropped_image.shape[1] / ratio),
-                                                   int(cropped_image.shape[0] / ratio)))
-    return cropped_image
+
+    # 计算人脸的在cropped_image里左上角和右下角的坐标
+    new_left_top_x = face_x - left_top_x
+    new_left_top_y = face_y - left_top_y
+    new_right_down_x = (face_x + face_width) - left_top_x
+    new_right_down_y = (face_y + face_height) - left_top_y
+    # 确保范围合法
+    new_left_top_x = max(0, new_left_top_x)
+    new_left_top_y = max(0, new_left_top_y)
+    new_right_down_x = min(cropped_image.shape[1], new_right_down_x)
+    new_right_down_y = min(cropped_image.shape[0], new_right_down_y)
+
+    return cropped_image, ((new_left_top_x, new_left_top_y), (new_right_down_x, new_right_down_y))
 
 
 if __name__ == '__main__':
-    vggface()
+    ijb_a(True)

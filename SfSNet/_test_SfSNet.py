@@ -94,7 +94,7 @@ def _test():
         net.blobs['data'].data[...] = im
 
         # forward
-        out_im = net.forward()
+        out_im = net.forward_with_align()
         n_out = out_im['Nconv0']  # normal, n_out=out_im{2};
         al_out = out_im['Aconv0']  # albedo, al_out=out_im{1};
         light_out = out_im['fc_light']  # shading, light_out=out_im{3};

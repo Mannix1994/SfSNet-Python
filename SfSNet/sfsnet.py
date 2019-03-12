@@ -49,7 +49,7 @@ class SfSNet:
             cv2.waitKey(50)
         return mask, im
 
-    def forward(self, image, show=False):
+    def forward(self, image, mask, show=False):
         """
         compute albedo, normal, shading, reconstruction of image
         :param image: the image you want to process
@@ -60,17 +60,14 @@ class SfSNet:
                  IRec: reconstructed image, BGR format
                  IShd: shading image, gray format
         """
-        mask, im = self.mg.align(image, crop_size=(M, M), return_none=True)
-        o_im = im.copy()
-        if show:
-            if mask is not None:
-                cv2.imshow("mask", mask)
-            cv2.imshow("image", im)
-            cv2.waitKey(50)
+        assert image.shape == (128, 128, 3)
+        if mask is not None:
+            assert mask.shape == (128, 128, 3)
+        o_im = image.copy()
 
         # prepare image
         # im=reshape(im,[size(im)]);
-        im = np.float32(im) / 255.0  # im=single(im)/255;
+        im = np.float32(image) / 255.0  # im=single(im)/255;
         # im = np.transpose(im, [1, 0, 2])  # m_data = permute(im_data, [2, 1, 3]); switch width and height
 
         # -----------add by wang-------------
@@ -148,6 +145,26 @@ class SfSNet:
         # -------------end---------------------
         return o_im, mask, n_out2, al_out2, Irec, Ishd
 
+    def forward_with_align(self, image, show=False):
+        """
+        align image and find mask.
+        compute albedo, normal, shading, reconstruction of image
+        :param image: the image you want to process
+        :return: o_im: cropped face, BGR format
+                 mask: mask image
+                 al_out2: albedo, BGR format
+                 n_out2: 3-channel float array, BGR format
+                 IRec: reconstructed image, BGR format
+                 IShd: shading image, gray format
+        """
+        mask, im = self.mg.align(image, crop_size=(M, M), return_none=True)
+        if show:
+            if mask is not None:
+                cv2.imshow("mask", mask)
+            cv2.imshow("image", image)
+            cv2.waitKey(50)
+        return self.forward(im, mask, show)
+
 
 if __name__ == '__main__':
     from config import *
@@ -163,7 +180,7 @@ if __name__ == '__main__':
             sys.stderr.write("Empty image: " + im)
             continue
 
-        face, mask, shape, albedo, reconstruction, shading = sfsnet.forward(image, show=False)
+        face, mask, shape, albedo, reconstruction, shading = sfsnet.forward_with_align(image, show=False)
 
         # print face.shape, shape.shape, albedo.shape, reconstruction.shape, shading.shape
         if mask is not None:
