@@ -197,9 +197,11 @@ def _which_direction(angle_in_range):
 
 
 class Statistic:
-    def __init__(self, csv_name, *keys):
+    def __init__(self, csv_name, auto_save=False, *keys):
         # CSV文件名字
         self._csv_name = csv_name
+        # 自动保存
+        self._auto_save = auto_save
         # CSV的标题行
         self._keys = list(keys)
         # 记录（一行是一条记录）
@@ -212,6 +214,9 @@ class Statistic:
         self._have_change = True
         # 还没有face_id指定的人
         if face_id not in self._records.keys():
+            # 如果设置了自动保存，保存一下之前统计的信息
+            if self._auto_save:
+                self.save()
             # 创建用于统计该人信息的字典
             self._records[face_id] = {}
             # 创建该人的所有key
@@ -240,7 +245,7 @@ class Statistic:
 
 
 if __name__ == '__main__':
-    s = Statistic('123.csv', 'left', 'right', 'direct')
+    s = Statistic('123.csv', False, 'left', 'right', 'direct')
     s.add(1, 'left')
     s.add(1, 'right')
     s.add(1, 'right')
