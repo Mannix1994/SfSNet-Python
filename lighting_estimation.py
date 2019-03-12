@@ -3,6 +3,7 @@
 import cv2
 import numpy as np
 import time
+import csv
 
 
 def draw_arrow(image, magnitude, angle, magnitude_threshold=1.0, length=10):
@@ -59,7 +60,7 @@ def which_direction(image, mask, magnitude_threshold=1.0, show_arrow=False):
     # set angle[i,j]=0 if magnitude[i, j] < magnitude_threshold
     angle = angle * np.int32(magnitude > magnitude_threshold)
     # count the angle's direction
-    # please see light_estimation_分区.png
+    # please see doc/light_estimation_分区.png
     right_down_1 = np.sum(np.int32((angle > 0) & (angle < 45)))
     right_down_2 = np.sum(np.int32((angle >= 45) & (angle < 90)))
     left_down_3 = np.sum(np.int32((angle >= 90) & (angle < 135)))
@@ -93,9 +94,7 @@ def which_direction(image, mask, magnitude_threshold=1.0, show_arrow=False):
 
 def gray_level(shading, mask):
     """
-    按照shading的像素平均值，把图像亮度分成七个等级。
-    分别为：70以下\70-100\100-130\130-160\160-190\
-    190-210\210-255
+    按照shading的像素平均值，把图像亮度分成五个等级。
     :param shading:
     :param mask:
     :return:
@@ -110,27 +109,24 @@ def gray_level(shading, mask):
     shading_count = np.sum(shading)
 
     avg_pixel_val = shading_count / pixel_count
-    print 'avg_pixel_val = ', avg_pixel_val
     level = 0
     if avg_pixel_val < 70:
         level = 0
-    elif avg_pixel_val < 100:
+    elif avg_pixel_val < 115:
         level = 1
-    elif avg_pixel_val < 130:
-        level = 2
     elif avg_pixel_val < 160:
+        level = 2
+    elif avg_pixel_val < 205:
         level = 4
-    elif avg_pixel_val < 190:
+    elif avg_pixel_val < 255:
         level = 5
-    elif avg_pixel_val < 210:
-        level = 6
     else:
-        level = 7
+        level = 0
     return avg_pixel_val, level
 
 
 def _which_direction(angle_in_range):
-    # please see light_estimation_方向.png
+    # please see doc/light_estimation_方向.png
     directions = []
     _max = max(angle_in_range, key=lambda x: x[1])[1]
     _max = float(_max)
@@ -204,6 +200,52 @@ def _which_direction(angle_in_range):
         return -1
 
 
+class Statistic:
+    def __init__(self, csv_name, *keys):
+        self._csv_name = csv_name
+        self._keys = list(keys)
+        self._records = {}
+        self._have_change = False
+
+    def add(self, face_id, key):
+        self._have_change = True
+        if face_id not in self._records.keys():
+            self._records[face_id] = {}
+            for k in self._keys:
+                self._records[face_id][k] = 0
+        self._records[face_id][key] += 1
+
+    def save(self):
+        with open(self._csv_name, 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(['id', ] + self._keys)
+            for fid, key_val in self._records.items():
+                print fid, key_val
+                writer.writerow([fid, ]+[key_val[k] for k in self._keys])
+
+        self._have_change = False
+
+    def __del__(self):
+        import sys
+        if self._have_change:
+            sys.stderr.write('Statistic: 还有数据没保存啊！！！\n')
+
+
 if __name__ == '__main__':
-    image = cv2.imread('shading.png', cv2.IMREAD_GRAYSCALE)
-    print which_direction(image, None, 1, True)
+    s = Statistic('123.csv', 'left', 'right', 'direct')
+    s.add(1, 'left')
+    s.add(1, 'right')
+    s.add(1, 'right')
+    s.add(1, 'direct')
+    s.add(1, 'direct')
+    s.add(2, 'left')
+    s.add(2, 'right')
+    s.add(2, 'right')
+    s.add(3, 'direct')
+    s.add(2, 'direct')
+    # s.save()
+
+
+# if __name__ == '__main__':
+#     image = cv2.imread('shading.png', cv2.IMREAD_GRAYSCALE)
+#     print which_direction(image, None, 1, True)

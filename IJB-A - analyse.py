@@ -6,8 +6,9 @@ import cv2
 import glob
 import csv
 from config import *
-from lighting_estimation import which_direction, gray_level
+from lighting_estimation import which_direction, gray_level, Statistic
 from SfSNet.sfsnet import SfSNet
+from ijb_a import crop_face_from_image
 
 
 def vggface():
@@ -52,6 +53,7 @@ def vggface():
 
 
 def ijb_a(show=False):
+    base_dir = os.path.join(PROJECT_DIR, 'result')
 
     sfsnet = SfSNet(MODEL, WEIGHTS, GPU_ID, LANDMARK_PATH)
 
@@ -62,6 +64,15 @@ def ijb_a(show=False):
         cv2.namedWindow('face', cv2.WINDOW_NORMAL)
         cv2.namedWindow('shading', cv2.WINDOW_NORMAL)
     gray_val = []
+    # shabi
+
+    direction_keys = ['left', 'right', 'direct']
+    level_keys = [0, 1, 2, 3, 4, 5]
+    direction_sta = Statistic('direction.csv', *direction_keys)
+    level_sta = Statistic('level.csv', *level_keys)
+    dir_level_keys = ['%s_%d' % (_d, _l) for _d in direction_keys for _l in level_keys]
+    dir_level_sta = Statistic('dir_level.csv', *dir_level_keys)
+
     with open(list_file, mode='r') as f:
         next(f)
         reader = csv.reader(f)
@@ -69,15 +80,11 @@ def ijb_a(show=False):
             people_records.append([line[1], line[2],
                                    (int(float(line[6])), int(float(line[7])),
                                     int(float(line[8])), int(float(line[9])))])
-        for record in people_records:
+        for record in people_records[0:10]:
             print '*' * 120
             print record
             image, rect = crop_face_from_image(record, show=False)
-            if show:
-                cv2.imshow('crop_face', image)
-                if cv2.waitKey(1) == 27:
-                    exit()
-            mask, aligned_image = sfsnet.process_image(image, show)
+            mask, aligned_image = sfsnet.process_image(image, show=False)
             if mask is not None:
                 face, mask, _, _, _, shading = sfsnet.forward(aligned_image, mask)
             else:
@@ -86,84 +93,42 @@ def ijb_a(show=False):
                 face, mask, _, _, _, shading = sfsnet.forward(resize_image, None)
                 shading = cv2.resize(shading, shape)
                 shading = shading[rect[0][1]:rect[1][1], rect[0][0]:rect[1][0]]
-                cv2.imshow('shading', shading)
-                cv2.waitKey(50)
 
-            direction, result = which_direction(shading, mask, show_arrow=False)
-            result = sorted(result, key=lambda x: x[1], reverse=True)
-            print direction, result
+            direction, angle_count = which_direction(shading, mask, magnitude_threshold=10)
+            angle_count = sorted(angle_count, key=lambda x: x[1], reverse=True)
+            print direction, angle_count
 
-            gray_val.append(gray_level(shading, mask)[0])
+            avg_pixel_val, level = gray_level(shading, mask)
+            print 'avg_pixel_val =', avg_pixel_val, 'level =', level
+            gray_val.append(avg_pixel_val)
 
-            # cv2.imwrite(os.path.join('result', str(int(direction)), im.split('/')[-1]), shading)
+            # 写入统计数据
+            direction_sta.add(record[0], conclude_direction(direction))
+            level_sta.add(record[0], level)
+            dir_level_sta.add(record[0], '%s_%d' % (conclude_direction(direction), level))
 
+            id_dir = os.path.join(base_dir, record[0], conclude_direction(direction))
+            if not os.path.exists(id_dir):
+                os.makedirs(id_dir)
+            cv2.imwrite(os.path.join(id_dir, record[1].split('/')[-1]), face)
             if show:
                 cv2.imshow('face', face)
                 cv2.imshow('shading', shading)
-                if cv2.waitKey(0) == 27:
+                if cv2.waitKey(1) == 27:
                     print 'Exiting...'
                     exit()
         print np.max(gray_val), np.min(gray_val)
+        direction_sta.save()
+        level_sta.save()
 
 
-def crop_face_from_image(record, scale=0.8, show=False):
-    """
-    crop image.
-    :param scale: the scale want crop
-    :param record: a record is like: ['966', 'frame/29456_00375.png', (129, 43, 102, 140)]
-    '966': image's id; 'frame/29456_00375.png': image's path; 129: FACE_X, 43: FACE_Y,
-    102: FACE_WIDTH, 140: FACE_HEIGHT.
-    :return: cropped image
-    """
-    image_path = os.path.join(IJB_A_IMAGE_ROOT, str(record[1]).replace('frame', 'frames'))
-    image = cv2.imread(image_path)
-    if image is None:
-        sys.stderr.write('Can\'t read image: %s \n' % image_path)
-        exit()
-    face_x = int(record[2][0])
-    face_y = int(record[2][1])
-    face_width = int(record[2][2])
-    face_height = int(record[2][3])
-    # 计算截取的区域中心点
-    center_x = int(face_x + face_width/2)
-    center_y = int(face_y + face_height/2)
-    # 以中心以及高度和宽度的一定比例，增加裁剪的区域
-    left_top_x = int(center_x - face_width * scale)
-    left_top_y = int(center_y - face_height * scale)
-    right_down_x = int(center_x + face_width * scale)
-    right_down_y = int(center_y + face_height * scale)
-    # 确保范围合法
-    left_top_x = max(0, left_top_x)
-    left_top_y = max(0, left_top_y)
-    right_down_x = min(image.shape[1], right_down_x)
-    right_down_y = min(image.shape[0], right_down_y)
-
-    if show:
-        im = image.copy()
-        cv2.circle(im, (face_x, face_y), 10, (0, 0, 255))
-        cv2.circle(im, (center_x, center_y), 10, (0, 255, 0))
-        cv2.rectangle(im, (face_x, face_y), (face_x + face_width, face_y + face_height),
-                      (0, 255, 0))
-        cv2.rectangle(im, (left_top_x, left_top_y), (right_down_x, right_down_y),
-                      (255, 0, 0))
-        cv2.imshow('src image', im)
-        cv2.waitKey(1)
-
-    # 截取人脸
-    cropped_image = image[left_top_y:right_down_y, left_top_x:right_down_x]
-
-    # 计算人脸的在cropped_image里左上角和右下角的坐标
-    new_left_top_x = face_x - left_top_x
-    new_left_top_y = face_y - left_top_y
-    new_right_down_x = (face_x + face_width) - left_top_x
-    new_right_down_y = (face_y + face_height) - left_top_y
-    # 确保范围合法
-    new_left_top_x = max(0, new_left_top_x)
-    new_left_top_y = max(0, new_left_top_y)
-    new_right_down_x = min(cropped_image.shape[1], new_right_down_x)
-    new_right_down_y = min(cropped_image.shape[0], new_right_down_y)
-
-    return cropped_image, ((new_left_top_x, new_left_top_y), (new_right_down_x, new_right_down_y))
+def conclude_direction(direction):
+    if 3 < direction < 5.5:
+        return 'left'
+    elif 6.5 < direction <= 8 or 0 < direction <= 1:
+        return 'right'
+    else:
+        return 'direct'
 
 
 if __name__ == '__main__':
