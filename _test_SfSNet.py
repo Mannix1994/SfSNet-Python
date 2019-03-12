@@ -144,9 +144,9 @@ def _test():
         Ishd = np.float32(Ishd)
         Ishd = cv2.cvtColor(Ishd, cv2.COLOR_RGB2GRAY)
 
-        al_out2 = (al_out2 * 255).astype(dtype=np.uint8)
-        Irec = (Irec * 255).astype(dtype=np.uint8)
-        Ishd = (Ishd * 255).astype(dtype=np.uint8)
+        al_out2 = (al_out2 / np.max(al_out2) * 255).astype(dtype=np.uint8)
+        Irec = (Irec / np.max(Irec) * 255).astype(dtype=np.uint8)
+        Ishd = (Ishd / np.max(Ishd) * 255).astype(dtype=np.uint8)
 
         al_out2 = cv2.cvtColor(al_out2, cv2.COLOR_RGB2BGR)
         n_out2 = cv2.cvtColor(n_out2, cv2.COLOR_RGB2BGR)
