@@ -71,13 +71,13 @@ def ijb_a(show=False):
 
     # 统计光照方向
     direction_keys = ['left', 'right', 'direct']
-    direction_sta = Statistic('direction.csv', *direction_keys)
+    direction_sta = Statistic('direction.csv', True, *direction_keys)
     # 统计shading的分布
     level_keys = [0, 1, 2, 3, 4, 5]
-    level_sta = Statistic('level.csv', *level_keys)
+    level_sta = Statistic('level.csv', True, *level_keys)
     # 统计方向与光照的组合
     dir_level_keys = ['%s_%d' % (_d, _l) for _d in direction_keys for _l in level_keys]
-    dir_level_sta = Statistic('dir_level.csv', *dir_level_keys)
+    dir_level_sta = Statistic('dir_level.csv', True, *dir_level_keys)
 
     with open(list_file, mode='r') as f:
         # 跳过IJB-A列表文件的标题行
