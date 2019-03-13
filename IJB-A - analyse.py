@@ -53,6 +53,9 @@ def vggface():
     print np.max(gray_val), np.min(gray_val)
 
 
+direction_keys = ['left', 'right', 'frontal']
+
+
 def ijb_a(show=False):
     # 默认存储目录
     base_dir = os.path.join(PROJECT_DIR, 'result')
@@ -60,7 +63,7 @@ def ijb_a(show=False):
     sfsnet = SfSNet(MODEL, WEIGHTS, GPU_ID, LANDMARK_PATH)
 
     # 列表文件
-    list_file = os.path.join(IJB_A_11, 'split3', 'train_3.csv')
+    list_file = os.path.join(IJB_A_11, 'split5', 'train_5.csv')
     # 包括人物id，文件名，以及人脸正方形(左上角定点，人脸的的宽和高)
     people_records = []
 
@@ -71,7 +74,6 @@ def ijb_a(show=False):
     # shabi
 
     # 统计光照方向
-    direction_keys = ['left', 'right', 'direct']
     direction_sta = Statistic('direction.csv', True, *direction_keys)
     # 统计shading的分布
     level_keys = gray_level_keys
@@ -153,11 +155,11 @@ def ijb_a(show=False):
 
 def conclude_direction(direction):
     if 3 < direction < 5.5:
-        return 'left'
+        return direction_keys[0]
     elif 6.5 < direction <= 8 or 0 < direction <= 1:
-        return 'right'
+        return direction_keys[1]
     else:
-        return 'direct'
+        return direction_keys[2]
 
 
 if __name__ == '__main__':
