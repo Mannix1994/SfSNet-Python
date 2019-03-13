@@ -56,7 +56,7 @@ def vggface():
 direction_keys = ['left', 'right', 'frontal']
 
 
-def s(filename, statistic_ids):
+def found_processed_ids(filename, statistic_ids):
     with open(filename, 'r') as f:
         next(f)
         r = csv.reader(f)
@@ -66,11 +66,11 @@ def s(filename, statistic_ids):
 
 def ijb_a(show=False):
     statistic_ids = set([])
-    s('data analysis/1/level.csv', statistic_ids)
-    s('data analysis/2/level.csv', statistic_ids)
-    s('data analysis/3/level.csv', statistic_ids)
-    s('data analysis/5/level.csv', statistic_ids)
-    s('data analysis/6/level.csv', statistic_ids)
+    found_processed_ids('data analysis/1/level.csv', statistic_ids)
+    found_processed_ids('data analysis/2/level.csv', statistic_ids)
+    found_processed_ids('data analysis/3/level.csv', statistic_ids)
+    found_processed_ids('data analysis/5/level.csv', statistic_ids)
+    found_processed_ids('data analysis/6/level.csv', statistic_ids)
     print len(statistic_ids)
     # exit()
     # 默认存储目录
@@ -97,7 +97,7 @@ def ijb_a(show=False):
             if show:
                 cv2.namedWindow('face', cv2.WINDOW_NORMAL)
                 cv2.namedWindow('shading', cv2.WINDOW_NORMAL)
-            gray_val = []
+            gray_val = [256, ]
 
             with open(list_file, mode='r') as f:
                 # 跳过IJB-A列表文件的标题行
