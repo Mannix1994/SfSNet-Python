@@ -7,7 +7,7 @@ import glob
 import csv
 import traceback
 from config import *
-from lighting_estimation import which_direction, gray_level, Statistic
+from lighting_estimation import which_direction, gray_level, Statistic, gray_level_keys
 from SfSNet.sfsnet import SfSNet
 from ijb_a import crop_face_from_image
 
@@ -60,7 +60,7 @@ def ijb_a(show=False):
     sfsnet = SfSNet(MODEL, WEIGHTS, GPU_ID, LANDMARK_PATH)
 
     # 列表文件
-    list_file = os.path.join(IJB_A_11, 'split1', 'train_1.csv')
+    list_file = os.path.join(IJB_A_11, 'split3', 'train_3.csv')
     # 包括人物id，文件名，以及人脸正方形(左上角定点，人脸的的宽和高)
     people_records = []
 
@@ -74,10 +74,10 @@ def ijb_a(show=False):
     direction_keys = ['left', 'right', 'direct']
     direction_sta = Statistic('direction.csv', True, *direction_keys)
     # 统计shading的分布
-    level_keys = [0, 1, 2, 3, 4, 5]
+    level_keys = gray_level_keys
     level_sta = Statistic('level.csv', True, *level_keys)
     # 统计方向与光照的组合
-    dir_level_keys = ['%s_%d' % (_d, _l) for _d in direction_keys for _l in level_keys]
+    dir_level_keys = ['%s_%s' % (_d, _l) for _d in direction_keys for _l in level_keys]
     dir_level_sta = Statistic('dir_level.csv', True, *dir_level_keys)
 
     try:
@@ -126,7 +126,7 @@ def ijb_a(show=False):
                 # 写入统计数据
                 direction_sta.add(record[0], conclude_direction(direction))
                 level_sta.add(record[0], level)
-                dir_level_sta.add(record[0], '%s_%d' % (conclude_direction(direction), level))
+                dir_level_sta.add(record[0], '%s_%s' % (conclude_direction(direction), level))
 
                 # 默认存储路径
                 id_dir = os.path.join(base_dir, record[0], str(level))
@@ -143,11 +143,12 @@ def ijb_a(show=False):
                         exit()
             print np.max(gray_val), np.min(gray_val)
     except:
+        traceback.print_exc()
+    finally:
         # 保存统计信息
         direction_sta.save()
         level_sta.save()
         dir_level_sta.save()
-        traceback.print_exc()
 
 
 def conclude_direction(direction):

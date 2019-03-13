@@ -80,6 +80,9 @@ def which_direction(image, mask, magnitude_threshold=1.0, show_arrow=False):
     return direction, angle_in_range
 
 
+gray_level_keys = ['<70', '70-115', '115<160', '160-205', '205-255']
+
+
 def gray_level(shading, mask):
     """
     按照shading的像素平均值，把图像亮度分成五个等级。
@@ -99,19 +102,18 @@ def gray_level(shading, mask):
     # 计算每个像素的平均值
     avg_pixel_val = shading_count / pixel_count
     # 判断等级
-    level = 0
     if avg_pixel_val < 70:
-        level = 0
+        level = gray_level_keys[0]
     elif avg_pixel_val < 115:
-        level = 1
+        level = gray_level_keys[1]
     elif avg_pixel_val < 160:
-        level = 2
+        level = gray_level_keys[2]
     elif avg_pixel_val < 205:
-        level = 4
+        level = gray_level_keys[3]
     elif avg_pixel_val < 255:
-        level = 5
+        level = gray_level_keys[4]
     else:
-        level = 0
+        level = gray_level_keys[0]
     return avg_pixel_val, level
 
 
@@ -230,11 +232,13 @@ class Statistic:
         with open(self._csv_name, 'w') as f:
             writer = csv.writer(f)
             # 写入标题行
-            writer.writerow(['id', ] + self._keys)
+            writer.writerow(['index', 'id', ] + self._keys)
             # 写入记录
+            index = 1
             for fid, key_val in self._records.items():
                 # print (fid, key_val)
-                writer.writerow([fid, ]+[key_val[k] for k in self._keys])
+                writer.writerow([index, fid, ]+[key_val[k] for k in self._keys])
+                index += 1
 
         self._have_change = False
 
@@ -249,7 +253,7 @@ if __name__ == '__main__':
     s.add(1, 'left')
     s.add(1, 'right')
     s.add(1, 'right')
-    s.add(1, 'direct')
+    s.add(4, 'direct')
     s.add(1, 'direct')
     s.add(2, 'left')
     s.add(2, 'right')
