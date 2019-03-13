@@ -80,43 +80,6 @@ def which_direction(image, mask, magnitude_threshold=1.0, show_arrow=False):
     return direction, angle_in_range
 
 
-gray_level_keys = ['<70', '70-115', '115<160', '160-205', '205-255']
-
-
-def gray_level(shading, mask):
-    """
-    按照shading的像素平均值，把图像亮度分成五个等级。
-    :param shading:
-    :param mask:
-    :return:
-    """
-    # 计算像素总数
-    if mask is not None:
-        if mask.ndim == 3:
-            mask = mask[:, :, 0]/255
-        pixel_count = np.sum(mask)
-    else:
-        pixel_count = shading.size
-    # 计算shading的像素总值
-    shading_count = np.sum(shading)
-    # 计算每个像素的平均值
-    avg_pixel_val = shading_count / pixel_count
-    # 判断等级
-    if avg_pixel_val < 70:
-        level = gray_level_keys[0]
-    elif avg_pixel_val < 115:
-        level = gray_level_keys[1]
-    elif avg_pixel_val < 160:
-        level = gray_level_keys[2]
-    elif avg_pixel_val < 205:
-        level = gray_level_keys[3]
-    elif avg_pixel_val < 255:
-        level = gray_level_keys[4]
-    else:
-        level = gray_level_keys[0]
-    return avg_pixel_val, level
-
-
 def _which_direction(angle_in_range):
     """
     please see doc/light_estimation_方向.png
@@ -246,6 +209,43 @@ class Statistic:
         import sys
         if self._have_change:
             sys.stderr.write('Statistic: 还有数据没保存啊！！！\n')
+
+
+gray_level_keys = ['<70', '70-115', '115-160', '160-205', '205-255']
+
+
+def gray_level(shading, mask):
+    """
+    按照shading的像素平均值，把图像亮度分成五个等级。
+    :param shading:
+    :param mask:
+    :return:
+    """
+    # 计算像素总数
+    if mask is not None:
+        if mask.ndim == 3:
+            mask = mask[:, :, 0]/255
+        pixel_count = np.sum(mask)
+    else:
+        pixel_count = shading.size
+    # 计算shading的像素总值
+    shading_count = np.sum(shading)
+    # 计算每个像素的平均值
+    avg_pixel_val = shading_count / pixel_count
+    # 判断等级
+    if avg_pixel_val < 70:
+        level = gray_level_keys[0]
+    elif avg_pixel_val < 115:
+        level = gray_level_keys[1]
+    elif avg_pixel_val < 160:
+        level = gray_level_keys[2]
+    elif avg_pixel_val < 205:
+        level = gray_level_keys[3]
+    elif avg_pixel_val < 255:
+        level = gray_level_keys[4]
+    else:
+        level = gray_level_keys[0]
+    return avg_pixel_val, level
 
 
 if __name__ == '__main__':
