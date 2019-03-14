@@ -56,23 +56,53 @@ def vggface():
 direction_keys = ['left', 'right', 'frontal']
 
 
-def found_processed_ids(filename, statistic_ids):
+def found_processed_ids(filename, statistic_ids, index=0, records=[]):
     with open(filename, 'r') as f:
         next(f)
         r = csv.reader(f)
         for i in r:
-            statistic_ids.add(i[0])
+            if i[index] not in statistic_ids:
+                records.append(i[index:])
+                statistic_ids.add(i[index])
+
+
+def save_csv(filename, records, keys):
+    with open(filename, 'w') as f:
+        w = csv.writer(f)
+        w.writerow(['id', ] + keys)
+        for r in records:
+            w.writerow(r)
+
+
+def save(file, keys):
+    statistic_ids = set([])
+    record_levels = []
+    found_processed_ids('data analysis/1/%s.csv' % file, statistic_ids, 0, record_levels)
+    found_processed_ids('data analysis/2/%s.csv' % file, statistic_ids, 0, record_levels)
+    found_processed_ids('data analysis/3/%s.csv' % file, statistic_ids, 0, record_levels)
+    found_processed_ids('data analysis/5/%s.csv' % file, statistic_ids, 0, record_levels)
+    found_processed_ids('data analysis/6/%s.csv' % file, statistic_ids, 0, record_levels)
+    found_processed_ids('data analysis/7~n/%s.csv' % file, statistic_ids, 0, record_levels)
+    print len(statistic_ids), len(record_levels)
+    save_csv('total_%s.csv' % file, record_levels, keys)
+
+
+if __name__ == '__main__':
+    save('level', gray_level_keys)
+    save('direction', direction_keys)
+    dir_level_keys = ['%s_%s' % (_d, _l) for _d in direction_keys for _l in gray_level_keys]
+    save('dir_level', dir_level_keys)
 
 
 def ijb_a(show=False):
     statistic_ids = set([])
-    found_processed_ids('data analysis/1/level.csv', statistic_ids)
-    found_processed_ids('data analysis/2/level.csv', statistic_ids)
-    found_processed_ids('data analysis/3/level.csv', statistic_ids)
-    found_processed_ids('data analysis/5/level.csv', statistic_ids)
-    found_processed_ids('data analysis/6/level.csv', statistic_ids)
-    print len(statistic_ids)
-    # exit()
+    found_processed_ids('data analysis/1/level.csv', statistic_ids, 0, )
+    found_processed_ids('data analysis/2/level.csv', statistic_ids, 0, )
+    found_processed_ids('data analysis/3/level.csv', statistic_ids, 0, )
+    found_processed_ids('data analysis/5/level.csv', statistic_ids, 0, )
+    found_processed_ids('data analysis/6/level.csv', statistic_ids, 0, )
+    found_processed_ids('data analysis/7~n/level.csv', statistic_ids, 0, )
+    exit()
     # 默认存储目录
     base_dir = os.path.join(PROJECT_DIR, 'result')
     # SfSNet实例，自己把sfenet包装了一遍
