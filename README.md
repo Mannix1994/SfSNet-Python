@@ -12,7 +12,7 @@ If there are bugs in _test_SfSNet.py, please open a issue.
 
 # Dependencies
 * Python 2.7
-* Caffe with pycaffe module
+* Caffe with pycaffe module(read build-caffe.md)
 * Python libs in requirements.txt
 
 # Run _test_SfSNet.py
