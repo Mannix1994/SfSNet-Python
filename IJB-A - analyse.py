@@ -102,6 +102,7 @@ def ijb_a(show=False):
     found_processed_ids('data analysis/5/level.csv', statistic_ids, 0, )
     found_processed_ids('data analysis/6/level.csv', statistic_ids, 0, )
     found_processed_ids('data analysis/7~n/level.csv', statistic_ids, 0, )
+    print len(statistic_ids)
     exit()
     # 默认存储目录
     base_dir = os.path.join(PROJECT_DIR, 'result')
