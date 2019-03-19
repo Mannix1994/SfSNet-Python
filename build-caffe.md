@@ -89,7 +89,10 @@ then:
 # replace 8 with your cpu kernel count
 make all -j8
 sudo make install
-sudo chmod -R 777 /opt/caffe 
+sudo chmod -R 777 /opt/caffe
+# make symbolic to python libs
+ln -s /opt/caffe/python/caffe ~/.local/lib/python2.7/site-packages/caffe
+
 ```
 ## 5. Test pycaffe
 create caffe_test.py, write code:
@@ -97,10 +100,6 @@ create caffe_test.py, write code:
 import sys
 import os
 
-CAFFE_ROOT='/opt/caffe'
-
-# the two lines add pycaffe support
-sys.path.insert(0, os.path.join(CAFFE_ROOT, 'python'))
 import caffe
 
 if __name__ == '__main__':
