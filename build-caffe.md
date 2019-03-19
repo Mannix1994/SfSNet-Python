@@ -90,7 +90,7 @@ then:
 make all -j8
 sudo make install
 sudo chmod -R 777 /opt/caffe
-# make symbolic to python libs
+# make symbolic to python libs directory
 ln -s /opt/caffe/python/caffe ~/.local/lib/python2.7/site-packages/caffe
 
 ```
