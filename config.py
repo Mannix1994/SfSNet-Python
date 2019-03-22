@@ -20,7 +20,7 @@ GPU_ID = 0
 M = 128  # size of input for SfSNet
 
 # landmarks's path
-LANDMARK_PATH = 'shape_predictor_68_face_landmarks.dat'
+LANDMARK_PATH = os.path.join(PROJECT_DIR, 'shape_predictor_68_face_landmarks.dat')
 
 if __name__ == '__main__':
     print PROJECT_DIR
