@@ -9,6 +9,8 @@ sudo apt-get install --yes --no-install-recommends libboost-all-dev
 sudo apt-get install --yes libopenblas-dev liblapack-dev libatlas-base-dev
 sudo apt-get install --yes libgflags-dev libgoogle-glog-dev liblmdb-dev
 sudo apt-get install --yes python-pip
+sudo apt-get install --yes graphviz
+
 ```
 
 ## 2. Clone caffe from github
@@ -24,6 +26,7 @@ modify ipython>=3.0.0 in python/requirements.txt to
 ipython==5.0.0
 
 ```bash
+pip install pydotplus
 pip install -r python/requirements.txt
 ```
 
