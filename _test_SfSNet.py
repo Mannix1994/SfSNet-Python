@@ -8,7 +8,7 @@ import cv2
 from matplotlib import pyplot as plt
 
 from config import *
-from functions import create_shading_recon
+from functions import create_shading_recon, convert
 
 # the two lines add pycaffe support
 sys.path.insert(0, os.path.join(CAFFE_ROOT, 'python'))
@@ -139,6 +139,7 @@ def _test():
         # cv2.imshow("Recon", Irec[:, :, [2, 1, 0]])
         # cv2.imshow("Shading", Ishd)
         # cv2.waitKey(100)
+        cv2.imwrite('shading.png', convert(Ishd))
 
         plt.figure(0)
         plt.subplot(231)
