@@ -8,12 +8,24 @@ from matplotlib import pyplot as plt
 import glob
 
 from config import *
-from functions import create_shading_recon
+from SfSNet.functions import create_shading_recon
 
 # the two lines add pycaffe support
-sys.path.insert(0, os.path.join(CAFFE_ROOT, 'python'))
 import caffe
-from mask import MaskGenerator
+
+
+class MaskGenerator(object):
+    def __init__(self):
+        super(MaskGenerator, self).__init__()
+
+    def align(self,  image, crop_size=(128, 128), scale=3.5):
+        image = cv2.copyMakeBorder(image, 70, 70, 70, 70, cv2.BORDER_CONSTANT)
+        image = cv2.resize(image, crop_size)
+        mask = np.ones(image.shape, dtype=np.uint8)*255
+        return mask, image
+
+
+M_PIE_DIR = '/home/creator/Projects/DL/MVCNN-keras-Face-Yale/data/M-PIE/train/001/*.png'
 
 
 def _test():
@@ -32,13 +44,13 @@ def _test():
         # Images and masks are provided
         # list_im = sorted(os.listdir(os.path.join(PROJECT_DIR, 'SfSNet/Images_mask')))
         # list_im = [im for im in list_im if im.endswith('_face.png')]
-        list_im = sorted(glob.glob(os.path.join(PROJECT_DIR, 'SfSNet/Images_mask/*_face.png')))
+        list_im = glob.glob(M_PIE_DIR)
         dat_idx = 1
     elif dat_idx == 0:
         # No mask provided (Need to use your own mask).
         # list_im = sorted(os.listdir(os.path.join(PROJECT_DIR, 'SfSNet/Images')))
         # list_im = [im for im in list_im if im.endswith('.png') or im.endswith('.jpg')]
-        list_im = sorted(glob.glob(os.path.join(PROJECT_DIR, 'SfSNet/Images/*.*')))
+        list_im = glob.glob(M_PIE_DIR)
         dat_idx = 0  # Uncomment to test with this mode
     else:
         sys.stderr.write('Wrong Option!')
@@ -48,7 +60,7 @@ def _test():
     print list_im, dat_idx
 
     # define a mask generator
-    mg = MaskGenerator(LANDMARK_PATH)
+    mg = MaskGenerator()
 
     l_image = []
     l_normal = []
@@ -94,7 +106,7 @@ def _test():
         net.blobs['data'].data[...] = im
 
         # forward
-        out_im = net.forward_with_align()
+        out_im = net.forward()
         n_out = out_im['Nconv0']  # normal, n_out=out_im{2};
         al_out = out_im['Aconv0']  # albedo, al_out=out_im{1};
         light_out = out_im['fc_light']  # shading, light_out=out_im{3};
@@ -147,9 +159,25 @@ def _test():
         Ishd = Ishd * diff
         Irec = Irec * diff
 
+        # -----------add by wang------------
         Ishd = np.float32(Ishd)
         Ishd = cv2.cvtColor(Ishd, cv2.COLOR_RGB2GRAY)
-        Ishd = cv2.cvtColor(Ishd, cv2.COLOR_GRAY2RGB)
+
+        # al_out2 = (al_out2 / np.max(al_out2) * 255).astype(dtype=np.uint8)
+        # Irec = (Irec / np.max(Irec) * 255).astype(dtype=np.uint8)
+        # Ishd = (Ishd / np.max(Ishd) * 255).astype(dtype=np.uint8)
+
+        al_out2 = cv2.cvtColor(al_out2, cv2.COLOR_RGB2BGR)
+        n_out2 = cv2.cvtColor(n_out2.astype(np.float32), cv2.COLOR_RGB2BGR)
+        Irec = cv2.cvtColor(Irec, cv2.COLOR_RGB2BGR)
+        # -------------end---------------------
+
+        cv2.imshow("Normal", n_out2)
+        cv2.imshow("Albedo", al_out2)
+        cv2.imshow("Recon", Irec)
+        cv2.imshow("Shading", Ishd)
+        if cv2.waitKey(0) == 27:
+            exit()
 
         l_image.append(o_im[:, :, [2, 1, 0]])
         l_albedo.append(al_out2)
@@ -157,12 +185,13 @@ def _test():
         l_recon.append(Irec)
         l_shading.append(Ishd)
 
+
     # 保存结果
-    save(l_image, PROJECT_DIR, 'result', 'origin')
-    save(l_albedo, PROJECT_DIR, 'result', 'albedo')
-    save(l_albedo, PROJECT_DIR, 'result', 'albedo')
-    save(l_recon, PROJECT_DIR, 'result', 'recon')
-    save(l_shading, PROJECT_DIR, 'result', 'shading')
+    # save(l_image, PROJECT_DIR, 'result', 'origin')
+    # save(l_albedo, PROJECT_DIR, 'result', 'albedo')
+    # save(l_albedo, PROJECT_DIR, 'result', 'albedo')
+    # save(l_recon, PROJECT_DIR, 'result', 'recon')
+    # save(l_shading, PROJECT_DIR, 'result', 'shading')
 
 
 def save(im_list, PROJECT_DIR, sub_dir, imname):
