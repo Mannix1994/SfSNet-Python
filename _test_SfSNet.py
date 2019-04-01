@@ -8,7 +8,7 @@ import cv2
 from matplotlib import pyplot as plt
 
 from config import *
-from functions import create_shading_recon
+from functions import create_shading_recon, convert
 
 # the two lines add pycaffe support
 sys.path.insert(0, os.path.join(CAFFE_ROOT, 'python'))
@@ -158,6 +158,8 @@ def _test():
         cv2.imshow("Albedo", al_out2)
         cv2.imshow("Recon", Irec)
         cv2.imshow("Shading", Ishd)
+
+        cv2.imwrite('Recon.png', convert(Irec))
         if cv2.waitKey(0) == 27:
             exit()
 
