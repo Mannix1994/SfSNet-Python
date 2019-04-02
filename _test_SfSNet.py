@@ -8,7 +8,8 @@ import cv2
 from matplotlib import pyplot as plt
 
 from config import *
-from functions import create_shading_recon, convert
+from functions import create_shading_recon
+from utils import convert
 
 # the two lines add pycaffe support
 sys.path.insert(0, os.path.join(CAFFE_ROOT, 'python'))
