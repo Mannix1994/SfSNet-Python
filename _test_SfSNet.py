@@ -8,7 +8,8 @@ import cv2
 from matplotlib import pyplot as plt
 
 from config import *
-from functions import create_shading_recon, convert
+from functions import create_shading_recon
+from utils import convert
 
 # the two lines add pycaffe support
 sys.path.insert(0, os.path.join(CAFFE_ROOT, 'python'))
@@ -140,6 +141,7 @@ def _test():
         # cv2.imshow("Shading", Ishd)
         # cv2.waitKey(100)
         cv2.imwrite('shading.png', convert(Ishd))
+        cv2.imwrite('Albedo.png', convert(cv2.cvtColor(al_out2, cv2.COLOR_RGB2BGR)))
 
         plt.figure(0)
         plt.subplot(231)
