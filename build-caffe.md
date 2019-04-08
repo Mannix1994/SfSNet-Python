@@ -24,6 +24,7 @@ modify matplotlib>=1.3.1 in python/requirements.txt to
 matplotlib==2.2.3  
 modify ipython>=3.0.0 in python/requirements.txt to 
 ipython==5.0.0
+modify numpy>=1.7.1 to numpy==1.15.4
 
 ```bash
 pip install pydotplus
@@ -93,8 +94,10 @@ then:
 make all -j8
 sudo make install
 sudo chmod -R 777 /opt/caffe
+# remove origin caffe
+rm ~/.local/lib/python2.7/site-packages/caffe
 # make symbolic to python libs
-ln -s /opt/caffe/python/caffe ~/.local/lib/python2.7/site-packages/caffe
+ln -s /opt/caffe/python/caffe ~/.local/lib/python2.7/site-packages/
 
 ```
 ## 5. Test pycaffe
