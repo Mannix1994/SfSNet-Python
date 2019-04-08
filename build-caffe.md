@@ -87,8 +87,7 @@ be install to /opt/caffe. cmake's output is like:
 -- Install:
 --   Install path      :   /opt/caffe
 ```
-
-then:
+*Must make sure the version of OpenCV is 2.4.** , then:
 ```bash
 # replace 8 with your cpu kernel count
 make all -j8
