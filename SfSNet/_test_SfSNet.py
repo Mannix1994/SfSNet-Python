@@ -11,7 +11,7 @@ from config import *
 from functions import create_shading_recon
 
 # the two lines add pycaffe support
-sys.path.insert(0, os.path.join(CAFFE_ROOT, 'python'))
+# sys.path.insert(0, os.path.join(CAFFE_ROOT, 'python'))
 import caffe
 from mask import MaskGenerator
 
@@ -94,7 +94,7 @@ def _test():
         net.blobs['data'].data[...] = im
 
         # forward
-        out_im = net.forward_with_align()
+        out_im = net.forward()
         n_out = out_im['Nconv0']  # normal, n_out=out_im{2};
         al_out = out_im['Aconv0']  # albedo, al_out=out_im{1};
         light_out = out_im['fc_light']  # shading, light_out=out_im{3};
@@ -102,10 +102,10 @@ def _test():
         # -----------add by wang-------------
         # from [1, 3, 128, 128] to [128, 128, 3]
         n_out = np.squeeze(n_out, 0)
-        n_out = np.transpose(n_out, [2, 1, 0])
+        n_out = np.transpose(n_out, [1, 2, 0])
         # from [1, 3, 128, 128] to [128, 128, 3]
         al_out = np.squeeze(al_out, 0)
-        al_out = np.transpose(al_out, [2, 1, 0])
+        al_out = np.transpose(al_out, [1, 2, 0])
         # from [1, 27] to [27, 1]
         light_out = np.transpose(light_out, [1, 0])
         # print n_out.shape, al_out.shape, light_out.shape
@@ -123,17 +123,17 @@ def _test():
         # transform
         n_out2 = n_out[:, :, (2, 1, 0)]
         # print 'n_out2 shape', n_out2.shape
-        n_out2 = cv2.rotate(n_out2, cv2.ROTATE_90_CLOCKWISE)  # imrotate(n_out2,-90)
-        n_out2 = np.fliplr(n_out2)
+        # n_out2 = cv2.rotate(n_out2, cv2.ROTATE_90_CLOCKWISE)  # imrotate(n_out2,-90)
+        # n_out2 = np.fliplr(n_out2)
         n_out2 = 2*n_out2-1  # [-1 1]
         nr = np.sqrt(np.sum(n_out2**2, axis=2))  # nr=sqrt(sum(n_out2.^2,3))
         nr = np.expand_dims(nr, axis=2)
         n_out2 = n_out2/np.repeat(nr, 3, axis=2)
         # print 'nr shape', nr.shape
 
-        al_out2 = cv2.rotate(al_out, cv2.ROTATE_90_CLOCKWISE)
-        al_out2 = al_out2[:, :, (2, 1, 0)]
-        al_out2 = np.fliplr(al_out2)
+        # al_out2 = cv2.rotate(al_out, cv2.ROTATE_90_CLOCKWISE)
+        al_out2 = al_out[:, :, (2, 1, 0)]
+        # al_out2 = np.fliplr(al_out2)
 
         # Note: n_out2, al_out2, light_out is the actual output
         Irec, Ishd = create_shading_recon(n_out2, al_out2, light_out)
