@@ -25,8 +25,8 @@ def _test():
     net = caffe.Net(MODEL, WEIGHTS, caffe.TEST)
 
     # choose dataset
-    # dat_idx = input('Please enter 1 for images with masks and 0 for images without mask: ')
-    dat_idx = 1
+    dat_idx = input('Please enter 1 for images with masks and 0 for images without mask: ')
+    # dat_idx = 1
     if dat_idx:
         # Images and masks are provided
         list_im = sorted(os.listdir('Images_mask/'))
