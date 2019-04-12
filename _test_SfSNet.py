@@ -12,7 +12,6 @@ from functions import create_shading_recon
 from utils import convert
 
 # the two lines add pycaffe support
-sys.path.insert(0, os.path.join(CAFFE_ROOT, 'python'))
 import caffe
 
 
@@ -26,8 +25,8 @@ def _test():
     net = caffe.Net(MODEL, WEIGHTS, caffe.TEST)
 
     # choose dataset
-    dat_idx = input('Please enter 1 for images with masks and 0 for images without mask: ')
-    # dat_idx = 0
+    # dat_idx = input('Please enter 1 for images with masks and 0 for images without mask: ')
+    dat_idx = 1
     if dat_idx:
         # Images and masks are provided
         list_im = sorted(os.listdir('Images_mask/'))
@@ -88,15 +87,14 @@ def _test():
         # -----------add by wang-------------
         # from [1, 3, 128, 128] to [128, 128, 3]
         n_out = np.squeeze(n_out, 0)
-        n_out = np.transpose(n_out, [2, 1, 0])
+        n_out = np.transpose(n_out, [1, 2, 0])
         # from [1, 3, 128, 128] to [128, 128, 3]
         al_out = np.squeeze(al_out, 0)
-        al_out = np.transpose(al_out, [2, 1, 0])
+        al_out = np.transpose(al_out, [1, 2, 0])
         # from [1, 27] to [27, 1]
         light_out = np.transpose(light_out, [1, 0])
         # print n_out.shape, al_out.shape, light_out.shape
         # -----------end---------------------
-
 
         """
         light_out is a 27 dimensional vector. 9 dimension for each channel of
@@ -109,24 +107,24 @@ def _test():
         # transform
         n_out2 = n_out[:, :, (2, 1, 0)]
         # print 'n_out2 shape', n_out2.shape
-        n_out2 = cv2.rotate(n_out2, cv2.ROTATE_90_CLOCKWISE)  # imrotate(n_out2,-90)
-        n_out2 = np.fliplr(n_out2)
+        # n_out2 = cv2.rotate(n_out2, cv2.ROTATE_90_CLOCKWISE)  # imrotate(n_out2,-90)
+        # n_out2 = np.fliplr(n_out2)
         n_out2 = 2*n_out2-1  # [-1 1]
         nr = np.sqrt(np.sum(n_out2**2, axis=2))  # nr=sqrt(sum(n_out2.^2,3))
         nr = np.expand_dims(nr, axis=2)
         n_out2 = n_out2/np.repeat(nr, 3, axis=2)
         # print 'nr shape', nr.shape
 
-        al_out2 = cv2.rotate(al_out, cv2.ROTATE_90_CLOCKWISE)
-        al_out2 = al_out2[:, :, (2, 1, 0)]
-        al_out2 = np.fliplr(al_out2)
+        # al_out2 = cv2.rotate(al_out, cv2.ROTATE_90_CLOCKWISE)
+        al_out2 = al_out[:, :, (2, 1, 0)]
+        # al_out2 = np.fliplr(al_out2)
 
         # Note: n_out2, al_out2, light_out is the actual output
         Irec, Ishd = create_shading_recon(n_out2, al_out2, light_out)
         # print Irec.shape, Ishd.shape
 
         if dat_idx == 1:
-            diff = (1 - mask) * np.ones(shape=(M, M, 3))
+            diff = (1 - mask) * np.ones(shape=(M, M, 3), dtype=np.float32)
             n_out2 = ((1 + n_out2) / 2) * mask + diff
             al_out2 = al_out2 * mask + diff
             Ishd = Ishd * mask + diff
@@ -134,12 +132,12 @@ def _test():
         else:
             pass
 
-        # cv2.imshow("Image", o_im)
-        # cv2.imshow("Normal", n_out2[:, :, [2, 1, 0]])
-        # cv2.imshow("Albedo", al_out2[:, :, [2, 1, 0]])
-        # cv2.imshow("Recon", Irec[:, :, [2, 1, 0]])
-        # cv2.imshow("Shading", Ishd)
-        # cv2.waitKey(100)
+        cv2.imshow("Image", o_im)
+        cv2.imshow("Normal", n_out2[:, :, [2, 1, 0]])
+        cv2.imshow("Albedo", al_out2[:, :, [2, 1, 0]])
+        cv2.imshow("Recon", Irec[:, :, [2, 1, 0]])
+        cv2.imshow("Shading", Ishd)
+        cv2.waitKey(0)
         cv2.imwrite('shading.png', convert(Ishd))
         cv2.imwrite('Albedo.png', convert(cv2.cvtColor(al_out2, cv2.COLOR_RGB2BGR)))
 
