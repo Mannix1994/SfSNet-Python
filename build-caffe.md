@@ -116,3 +116,7 @@ then:
 python caffe_test.py
 ```
 if there is no error message, congratulations, you made it
+
+## 6. Install code hints file for Pycharm
+
+See: https://github.com/Mannix1994/PythonResources
