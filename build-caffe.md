@@ -23,7 +23,7 @@ cd caffe
 modify matplotlib>=1.3.1 in python/requirements.txt to 
 matplotlib==2.2.3  
 modify ipython>=3.0.0 in python/requirements.txt to 
-ipython==5.0.0
+ipython==5.0.0  
 modify numpy>=1.7.1 to numpy==1.15.4
 
 ```bash
