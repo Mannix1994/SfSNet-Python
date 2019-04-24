@@ -20,11 +20,11 @@ cd caffe
 ```
 
 ## 3. Install pycaffe denpendencies
-modify matplotlib>=1.3.1 in python/requirements.txt to 
-matplotlib==2.2.3  
-modify ipython>=3.0.0 in python/requirements.txt to 
-ipython==5.0.0
-modify numpy>=1.7.1 to numpy==1.15.4
+* modify `matplotlib>=1.3.1` in python/requirements.txt to 
+`matplotlib==2.2.4 ` 
+* modify `ipython>=3.0.0` in python/requirements.txt to 
+`ipython==5.0.0 ` 
+* modify `scikit-image>=0.9.3` to `scikit-image==0.14.2`
 
 ```bash
 pip install pydotplus
@@ -36,7 +36,7 @@ run cmake command
 ```bash
 mkdir cmake-build
 cd cmake-build
-cmake -D CMAKE_INSTALL_PREFIX=/opt/caffe ..
+cmake -D CMAKE_INSTALL_PREFIX=/opt/caffe -D CMAKE_BUILD_TYPE=Release -D OpenCV_DIR=/usr/share/OpenCV ..
 ```
 CMAKE_INSTALL_PREFIX specify the install directory, caffe will
 be install to /opt/caffe. cmake's output is like:
@@ -87,7 +87,7 @@ be install to /opt/caffe. cmake's output is like:
 -- Install:
 --   Install path      :   /opt/caffe
 ```
-*Must make sure the version of OpenCV is 2.4.** , then:
+then:
 ```bash
 # replace 8 with your cpu kernel count
 make all -j8
@@ -99,6 +99,9 @@ rm ~/.local/lib/python2.7/site-packages/caffe
 ln -s /opt/caffe/python/caffe ~/.local/lib/python2.7/site-packages/
 
 ```
+* Add `/opt/caffe/bin` to `$PATH` (optional)  
+    add `export PATH=/opt/caffe/bin:$PATH` to the end of file `~/.bashrc`
+
 ## 5. Test pycaffe
 create caffe_test.py, write code:
 ```python
@@ -116,3 +119,7 @@ then:
 python caffe_test.py
 ```
 if there is no error message, congratulations, you made it
+
+## 6. Install code hints file for Pycharm
+
+See: https://github.com/Mannix1994/PythonResources
