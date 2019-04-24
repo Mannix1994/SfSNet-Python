@@ -20,11 +20,12 @@ cd caffe
 ```
 
 ## 3. Install pycaffe denpendencies
-modify matplotlib>=1.3.1 in python/requirements.txt to 
-matplotlib==2.2.3  
-modify ipython>=3.0.0 in python/requirements.txt to 
-ipython==5.0.0  
-modify numpy>=1.7.1 to numpy==1.15.4
+* modify `matplotlib>=1.3.1` in python/requirements.txt to 
+`matplotlib==2.2.4 ` 
+* modify `ipython>=3.0.0` in python/requirements.txt to 
+`ipython==5.0.0 ` 
+* modify `numpy>=1.7.1` to `numpy==1.15.4`
+* modify `scikit-image>=0.9.3` to `scikit-image==0.14.2`
 
 ```bash
 pip install pydotplus
@@ -99,6 +100,12 @@ rm ~/.local/lib/python2.7/site-packages/caffe
 ln -s /opt/caffe/python/caffe ~/.local/lib/python2.7/site-packages/
 
 ```
+* Add `/opt/caffe/bin` to `$PATH` (optional)
+```bash
+gedit ~/.bashrc
+export PATH=/opt/caffe/bin:$PATH
+```
+
 ## 5. Test pycaffe
 create caffe_test.py, write code:
 ```python
