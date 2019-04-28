@@ -189,26 +189,66 @@ then:
 ```bash
 python caffe_test.py
 ```
-if there is no error message, congratulations, you made it
+if there is no error message, congratulations, you made it!
 
-## 6. Install code hints file for Pycharm
+Install code hints file for Pycharm
 
 See: https://github.com/Mannix1994/PythonResources
 
 ## 6. Test matcaffe
 
-```bash
-# preload some libs
-export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libtiff.so.5:/usr/lib/x86_64-linux-gnu/libhdf5_cpp.so:/usr/lib/x86_64-linux-gnu/libhdf5_hl_cpp.so:/usr/lib/x86_64-linux-gnu/libhdf5_serial.so:/usr/lib/x86_64-linux-gnu/libhdf5_serial_fortran.so:/usr/lib/x86_64-linux-gnu/libhdf5_serial_hl.so:/usr/lib/x86_64-linux-gnu/hdf5/serial/libhdf5.so
-matlab
-```
-
-test.m
+Open Matlab and write test.m
 ```matlab
 PATH_TO_CAFFE_MATLAB='/opt/caffe/matlab';
 addpath(genpath(PATH_TO_CAFFE_MATLAB));
 caffe.set_mode_cpu();
 ```
+Run test.m, there are some errors:
+```txt
+Invalid MEX-file '/opt/caffe/matlab/+caffe/private/caffe_.mexa64': /usr/lib/libgdal.so.20: symbol
+TIFFReadRGBATileExt version LIBTIFF_4.0 not defined in file libtiff.so.5 with link time reference.
 
-Then run test.m in matlab prompt. if no error, Congratulations.
-if there are some errors, might be libs conflict.
+Error in caffe.set_mode_cpu (line 5)
+caffe_('set_mode_cpu');
+
+Error in test (line 3)
+caffe.set_mode_cpu();
+```
+It looks like the lib LIBTIFF's problem. This is because Matlab 
+will load the library of its self, we compile caffe and link
+system libtiff. so we should preload system libtiff.
+
+Firstly, find where libtiff is:
+```bash
+locate libtiff.so
+```
+output:
+```txt
+/snap/gimp/113/usr/lib/x86_64-linux-gnu/libtiff.so.5
+...
+/snap/vlc/770/usr/lib/x86_64-linux-gnu/libtiff.so.5.2.4
+/usr/lib/x86_64-linux-gnu/libtiff.so
+/usr/lib/x86_64-linux-gnu/libtiff.so.5
+/usr/lib/x86_64-linux-gnu/libtiff.so.5.3.0
+/usr/local/MATLAB/R2018a/bin/glnxa64/libtiff.so.5
+/usr/local/MATLAB/R2018a/bin/glnxa64/libtiff.so.5.0.5
+```
+We should choose the system lidtiff 
+`/usr/lib/x86_64-linux-gnu/libtiff.so.5`not the one 
+in `snap/`  or the one in `/usr/local/MATLAB/`.  
+Open terminal and run:
+```bash
+# preload some libs
+export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libtiff.so.5
+matlab
+```
+Then run test.m in matlab prompt, there will be no error. When you run 
+matcaffe, if there are any problem about lib, you can solve it by the method
+mentioned above.  
+Some other libs need to be preload:
+```bash
+export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libtiff.so.5:/usr/lib/x86_64-linux-gnu/libhdf5_cpp.so:/usr/lib/x86_64-linux-gnu/libhdf5_hl_cpp.so:/usr/lib/x86_64-linux-gnu/libhdf5_serial.so:/usr/lib/x86_64-linux-gnu/libhdf5_serial_fortran.so:/usr/lib/x86_64-linux-gnu/libhdf5_serial_hl.so:/usr/lib/x86_64-linux-gnu/hdf5/serial/libhdf5.so
+matlab
+```
+
+Good luck.
