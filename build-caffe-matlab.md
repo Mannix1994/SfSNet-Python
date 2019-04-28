@@ -13,13 +13,13 @@ g++ -v
  On Ubuntu 16.04 gcc/g++ 6.3 and Matlab 2018a is needed. you 
 should build gcc/g++ 6.3 first, and then:
 
-  ```bash
-    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 2 --slave /usr/bin/g++ g++ /usr/bin/g++-6
-    sudo update-alternatives --config gcc  # choose gcc 6
-    # make sure is gcc 6 and g++6
-    gcc -v
-    g++ -v
-  ```
+```bash
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 2 --slave /usr/bin/g++ g++ /usr/bin/g++-6
+sudo update-alternatives --config gcc  # choose gcc 6
+# make sure is gcc 6 and g++6
+gcc -v
+g++ -v
+```
 ## 1. Install denpendencies
 ```bash
 sudo apt-get update 
@@ -30,7 +30,6 @@ sudo apt-get install --yes libopenblas-dev liblapack-dev libatlas-base-dev
 sudo apt-get install --yes libgflags-dev libgoogle-glog-dev liblmdb-dev
 sudo apt-get install --yes python-pip
 sudo apt-get install --yes graphviz
-
 ```
 
 ## 2. Clone caffe from github
@@ -54,7 +53,7 @@ pip install -r python/requirements.txt
 ```
 
 ## 4. Build caffe
-* Modify camke configuration  
+* Modify cmake configuration  
     * modify line 357 in `cmake/Utils.cmake` from:
         ```txt
           message(FATAL_ERROR "Logic error. Need to update cmake script")
