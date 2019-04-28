@@ -1,4 +1,6 @@
 # Build caffe on Ubuntu
+If you want by caffe with matcaffe, please see: 
+[build-caffe-matlab.md](https://github.com/Mannix1994/SfSNet-Python/blob/master/build-caffe-matlab.md)
 
 ## 1. Install denpendencies
 ```bash
