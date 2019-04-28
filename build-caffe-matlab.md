@@ -1,17 +1,25 @@
 # Build caffe on Ubuntu
 
-On Ubuntu 18.05, gcc/g++ 6.5 and Matlab 2018a is needed.
-install them first.
-* Install gcc6/g++6
+On Ubuntu 18.04, gcc/g++ 6.5 and Matlab 2018a is needed.
+install them first. Install gcc6/g++6
+```bash
+sudo apt-get install gcc-6 g++6
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 2 --slave /usr/bin/g++ g++ /usr/bin/g++-6
+sudo update-alternatives --config gcc  # choose gcc 6
+# make sure is gcc 6 and g++6
+gcc -v
+g++ -v
+```
+ On Ubuntu 16.04 gcc/g++ 6.3 and Matlab 2018a is needed. you 
+should build gcc/g++ 6.3 first, and then:
+
   ```bash
-    sudo apt-get install gcc-6 g++6
     sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 2 --slave /usr/bin/g++ g++ /usr/bin/g++-6
     sudo update-alternatives --config gcc  # choose gcc 6
     # make sure is gcc 6 and g++6
     gcc -v
     g++ -v
   ```
-
 ## 1. Install denpendencies
 ```bash
 sudo apt-get update 
