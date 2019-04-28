@@ -20,6 +20,8 @@ sudo update-alternatives --config gcc  # choose gcc 6
 gcc -v
 g++ -v
 ```
+If you will build caffe with CUDA 10, please update CMAKE to 3.14.3.
+
 ## 1. Install denpendencies
 ```bash
 sudo apt-get update 
