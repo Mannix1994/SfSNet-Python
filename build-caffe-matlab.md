@@ -76,7 +76,7 @@ pip install -r python/requirements.txt
           cmake_policy(SET CMP0054 NEW)
         endif()
         include_directories(include)
-        include_directories(/usr/local/cuda/include)  # CUDA include directory
+        include_directories(${CUDA_TOOLKIT_ROOT_DIR}/include)  # CUDA include directory
         ```
 
 * Run command:
@@ -87,7 +87,8 @@ pip install -r python/requirements.txt
     -D CMAKE_BUILD_TYPE=Release \
     -D OpenCV_DIR=/usr/share/OpenCV \
     -D BUILD_matlab=ON \
-    -D Matlab_DIR=/usr/local/MATLAB/R2018a ..
+    -D Matlab_DIR=/usr/local/MATLAB/R2018a \
+    -D CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-9.0 ..
     ```
     CMAKE_INSTALL_PREFIX specify the install directory, caffe will
     be install to /opt/caffe. OpenCV_DIR specify the default 
