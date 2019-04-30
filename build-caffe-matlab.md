@@ -234,7 +234,7 @@ output:
 /usr/local/MATLAB/R2018a/bin/glnxa64/libtiff.so.5
 /usr/local/MATLAB/R2018a/bin/glnxa64/libtiff.so.5.0.5
 ```
-We should choose the system lidtiff 
+We should choose the system libtiff 
 `/usr/lib/x86_64-linux-gnu/libtiff.so.5`not the one 
 in `snap/`  or the one in `/usr/local/MATLAB/`.  
 Open terminal and run:
