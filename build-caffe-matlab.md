@@ -46,6 +46,8 @@ cd caffe
 * modify `ipython>=3.0.0` in python/requirements.txt to 
 `ipython==5.0.0 ` 
 * modify `scikit-image>=0.9.3` to `scikit-image==0.14.2`
+* modify `network>=1.8.1` to `network==2.2`
+
 
 run command
 
@@ -197,7 +199,10 @@ Install code hints file for Pycharm
 See: https://github.com/Mannix1994/PythonResources
 
 ## 6. Test matcaffe
-
+**Must run Matlab in a new Terminal.**
+```bash
+matlab # run matlab in a terminal
+```  
 Open Matlab and write test.m
 ```matlab
 PATH_TO_CAFFE_MATLAB='/opt/caffe/matlab';
