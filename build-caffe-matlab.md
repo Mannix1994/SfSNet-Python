@@ -241,7 +241,7 @@ Open terminal and run:
 ```bash
 # preload some libs
 export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libtiff.so.5
-matlab
+matlab  # run matlab from terminal
 ```
 Then run test.m in matlab prompt, there will be no error. When you run 
 matcaffe, if there are any problem about lib, you can solve it by the method
@@ -249,7 +249,7 @@ mentioned above.
 Some other libs need to be preload:
 ```bash
 export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libtiff.so.5:/usr/lib/x86_64-linux-gnu/libhdf5_cpp.so:/usr/lib/x86_64-linux-gnu/libhdf5_hl_cpp.so:/usr/lib/x86_64-linux-gnu/libhdf5_serial.so:/usr/lib/x86_64-linux-gnu/libhdf5_serial_fortran.so:/usr/lib/x86_64-linux-gnu/libhdf5_serial_hl.so:/usr/lib/x86_64-linux-gnu/hdf5/serial/libhdf5.so
-matlab
+matlab # run matlab from terminal
 ```
 
 Good luck.
